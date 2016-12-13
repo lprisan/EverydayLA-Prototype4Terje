@@ -1,0 +1,12 @@
+title: Everyday Learning Analytics @ CEEI Seminar (14.12.2016)
+author: Luis P. Prieto
+email: lprisan@hotmail.com
+description: A prototype of what Everyday Learning Analytics might look like
+baseurl: /EverydayLA-Prototype2
+
+# Build settings
+markdown: kramdown
+theme: minima
+exclude:
+  - Gemfile
+  - Gemfile.lock
