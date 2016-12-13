@@ -954,3 +954,1284 @@ renderPlot({
               
                 })
 ```
+
+
+
+
+STEM
+=====================================  
+    
+Column 1
+-------------------------------------
+    
+### Group formation
+    
+
+```{r}
+INITIALGRSTEM <- 0.5
+# logistic curve: 100*(1/(1+exp(-x+log((1-INITIAL)/INITIAL))))
+renderGauge({
+  
+      gr <- groups()
+
+      coef_cores <- 0
+      coef_periph <- 0
+      if(nrow(gr)>0){
+        members <- gr[,c("Implication.STEM","Name","Email")]
+        cores <- members[regexpr('core',members$Implication.STEM)!=-1,]
+        print(cores)
+        periph <-  members[regexpr('loop',members$Implication.STEM)!=-1,]
+        print(periph)
+        
+        coef_cores <- as.numeric(nrow(cores)>1)
+        coef_periph <- as.numeric(nrow(periph)>0)
+      }
+    
+
+    x <- coef_cores + coef_periph
+    print(x)
+    point <- 100*(1/(1+exp(-x+log((1-INITIALGRSTEM)/INITIALGRSTEM))))
+    gauge(round(point), min = 0, max = 100, symbol = '%', gaugeSectors(
+      success = c(80, 100), warning = c(40, 79), danger = c(0, 39)
+    ))
+})
+
+```    
+
+### Core/Peripheric Members
+
+
+```{r}
+
+renderValueBox({
+              gr <- groups()
+
+              if(nrow(gr)>0){
+                members <- gr[,c("Implication.STEM","Name","Email")]
+                cores <- members[regexpr('core',members$Implication.STEM)!=-1,]
+                print(cores)
+                periph <-  members[regexpr('loop',members$Implication.STEM)!=-1,]
+                print(periph)
+                
+                message <- paste(nrow(cores)," core /",nrow(periph), "peripheral")
+                valueBox(
+                  value=message,
+                  icon = "fa-balance-scale",
+                  color="success")
+                }
+              })
+
+```
+
+### Core Members
+
+```{r}
+
+renderTable({
+              gr <- groups()
+
+              if(nrow(gr)>0){
+                members <- gr[,c("Implication.STEM","Name","Email")]
+                cores <- members[regexpr('core',members$Implication.STEM)!=-1,]
+                print(cores)
+                periph <-  members[regexpr('loop',members$Implication.STEM)!=-1,]
+                print(periph)
+                cores[,c(2:3)]
+              }
+            })
+
+```
+
+### Peripheric Members
+
+```{r}
+
+renderTable({
+              gr <- groups()
+
+              if(nrow(gr)>0){
+                members <- gr[,c("Implication.STEM","Name","Email")]
+                cores <- members[regexpr('core',members$Implication.STEM)!=-1,]
+                print(cores)
+                periph <-  members[regexpr('loop',members$Implication.STEM)!=-1,]
+                print(periph)
+                periph[,c(2:3)]
+              }
+            })
+
+```
+
+### Group's Email List
+    
+```{r}
+
+renderText({
+              gr <- groups()
+
+              message <- ""
+              if(nrow(gr)>0){
+                members <- gr[,c("Implication.STEM","Name","Email")]
+                cores <- members[regexpr('core',members$Implication.STEM)!=-1,]
+                print(cores)
+                periph <-  members[regexpr('loop',members$Implication.STEM)!=-1,]
+                print(periph)
+                message <- paste(cores$Email, periph$Email, sep=", ", collapse = ", ")
+              }
+              message
+            })
+
+```
+
+
+   
+Column 2
+-------------------------------------
+   
+### Concrete project
+
+```{r}
+INITIALPRJSTEM <- 0.3
+# logistic curve: 100*(1/(1+exp(-x+log((1-INITIAL)/INITIAL))))
+renderGauge({
+  
+      q4 <- nabc1()
+      coef_nat <- 0
+      if(nrow(q4)>0 & nrow(q4[regexpr('STEM',q4$Group)!=-1,])>0){
+        nature <- q4[regexpr('STEM',q4$Group)!=-1,"Nature"]
+        
+        message <- as.character(nature)
+        message <- paste(message, collapse = ", ")
+        if(nchar(message)>0) coef_nat <- 1
+      }
+
+      data <- work()
+      coef_peer <- 0
+      if(nrow(data)>0 & nrow(data[regexpr('STEM',data$Group)!=-1,])>0){
+          data2 <- data[regexpr('STEM',data$Group)!=-1,]
+          coef_peer <- (mean(data2$Concreteness)-4)/3
+      }
+
+      data <- inboxSTEM()
+      coef_sent <- 0
+      if(nrow(data)>0){
+        fb <- paste(data$Idea, collapse=" ")
+        poa_word_v <- get_tokens(fb, pattern = "\\W")
+        print(paste("stem inbox:",poa_word_v))
+        syuzhet_vector <- get_sentiment(poa_word_v, method="syuzhet")
+        coef_sent <- round(mean(syuzhet_vector), digits=3)
+      }
+
+      
+      q4 <- nabc1()
+      q6 <- nabc2()
+      
+      counts <- data.frame(Context=c(0),Problem=c(0),Pedagogical=c(0), Technological=c(0),
+                           Benefit=c(0), Current=c(0), Alternative=c(0), Milestone=c(0))
+      if(nrow(q4)>0 | nrow(q6)>0){
+        if(nrow(q4)>0 & nrow(q4[regexpr('STEM',q4$Group)!=-1,])>0){
+          q4stem <- q4[regexpr('STEM',q4$Group)!=-1,]
+          context <- q4stem[,c("Context","Timestamp")]
+          counts[1,'Context'] <- sum(sapply(context$Context,FUN = count_words))
+          problem <- q4stem[,c("Problem","Timestamp")]
+          counts[1,'Problem'] <- sum(sapply(problem$Problem,FUN = count_words))
+          pedag <- q4stem[,c("Pedagogical","Timestamp")]
+          counts[1,'Pedagogical'] <- sum(sapply(pedag$Pedagogical,FUN = count_words))
+          tech <- q4stem[,c("Technological","Timestamp")]
+          counts[1,'Technological'] <- sum(sapply(tech$Technological,FUN = count_words))
+        }
+        if(nrow(q6)>0 & nrow(q6[regexpr('STEM',q6$Group)!=-1,])>0){
+          q6stem <- q6[regexpr('STEM',q6$Group)!=-1,]
+          print(q6stem)
+          ben <- q6stem[,c("Benefit","Timestamp")]
+          counts[1,'Benefit'] <- sum(sapply(ben$Benefit,FUN = count_words))
+          curr <- q6stem[,c("Current","Timestamp")]
+          counts[1,'Current'] <- sum(sapply(curr$Current,FUN = count_words))
+          alt <- q6stem[,c("Alternative","Timestamp")]
+          counts[1,'Alternative'] <- sum(sapply(alt$Alternative,FUN = count_words))
+          mil <- q6stem[,c("Milestone","Timestamp")]
+          counts[1,'Milestone'] <- sum(sapply(mil$Milestone,FUN = count_words))
+        }
+      }
+      
+      melted <- melt(counts)
+      coef_prop <- sum(melted$value>30)/8 # We count how many fields have more than 30 words
+      print("coef_prop")
+      print(coef_prop)
+
+    x <- coef_nat + coef_peer + coef_sent + coef_prop
+    print(x)
+    point <- 100*(1/(1+exp(-x+log((1-INITIALPRJSTEM)/INITIALPRJSTEM))))
+    gauge(round(point), min = 0, max = 100, symbol = '%', gaugeSectors(
+      success = c(80, 100), warning = c(40, 79), danger = c(0, 39)
+    ))
+})
+
+```    
+
+
+### Nature of project {data-height=200}
+
+```{r}
+
+renderText({
+              q4 <- nabc1()
+              message <- ""
+              if(nrow(q4)>0 & nrow(q4[regexpr('STEM',q4$Group)!=-1,])>0){
+                nature <- q4[regexpr('STEM',q4$Group)!=-1,"Nature"]
+                
+                message <- as.character(nature)
+                message <- paste(message, collapse = ", ")
+              }
+              message
+            })
+
+```
+
+### Peer assessment concreteness
+
+```{r}
+
+renderPlot({
+              data <- work()
+              
+              if(nrow(data)>0 & nrow(data[regexpr('STEM',data$Group)!=-1,])>0){
+                data2 <- data[regexpr('STEM',data$Group)!=-1,]
+                ggplot(data2, aes(x=Concreteness, fill="red"))+geom_density(alpha=0.2)+theme_bw()+xlim(1,7)+geom_vline(xintercept = mean(data2$Concreteness))
+              }
+              
+                })
+```
+
+### Inbox's sentiment
+
+```{r}
+
+renderValueBox({
+              data <- inboxSTEM()
+              val <- 0
+              if(nrow(data)>0){
+                fb <- paste(data$Idea, collapse=" ")
+                poa_word_v <- get_tokens(fb, pattern = "\\W")
+                print(paste("stem inbox:",poa_word_v))
+                syuzhet_vector <- get_sentiment(poa_word_v, method="syuzhet")
+                val <- round(mean(syuzhet_vector), digits=3)
+              }
+              
+              valueBox(
+                value=val,
+                icon = "fa-smile-o",
+                color="primary")
+            })
+
+
+
+```   
+
+### Word count in proposal {data-height=700}
+
+```{r}
+
+renderPlot({
+              q4 <- nabc1()
+              q6 <- nabc2()
+              
+              counts <- data.frame(Context=c(0),Problem=c(0),Pedagogical=c(0), Technological=c(0),
+                                   Benefit=c(0), Current=c(0), Alternative=c(0), Milestone=c(0))
+
+              if(nrow(q4)>0 | nrow(q6)>0){
+                if(nrow(q4)>0 & nrow(q4[regexpr('STEM',q4$Group)!=-1,])>0){
+                  q4stem <- q4[regexpr('STEM',q4$Group)!=-1,]
+                  context <- q4stem[,c("Context","Timestamp")]
+                  counts[1,'Context'] <- sum(sapply(context$Context,FUN = count_words))
+                  problem <- q4stem[,c("Problem","Timestamp")]
+                  counts[1,'Problem'] <- sum(sapply(problem$Problem,FUN = count_words))
+                  pedag <- q4stem[,c("Pedagogical","Timestamp")]
+                  counts[1,'Pedagogical'] <- sum(sapply(pedag$Pedagogical,FUN = count_words))
+                  tech <- q4stem[,c("Technological","Timestamp")]
+                  counts[1,'Technological'] <- sum(sapply(tech$Technological,FUN = count_words))
+                }
+                if(nrow(q6)>0 & nrow(q6[regexpr('STEM',q6$Group)!=-1,])>0){
+                  q6stem <- q6[regexpr('STEM',q6$Group)!=-1,]
+                  print(q6stem)
+                  ben <- q6stem[,c("Benefit","Timestamp")]
+                  counts[1,'Benefit'] <- sum(sapply(ben$Benefit,FUN = count_words))
+                  curr <- q6stem[,c("Current","Timestamp")]
+                  counts[1,'Current'] <- sum(sapply(curr$Current,FUN = count_words))
+                  alt <- q6stem[,c("Alternative","Timestamp")]
+                  counts[1,'Alternative'] <- sum(sapply(alt$Alternative,FUN = count_words))
+                  mil <- q6stem[,c("Milestone","Timestamp")]
+                  counts[1,'Milestone'] <- sum(sapply(mil$Milestone,FUN = count_words))
+                }
+              }
+              
+              melted <- melt(counts)
+              
+              ggplot(melted, aes(x=variable, y=value, fill=variable))+geom_bar(stat='identity', alpha=0.2)+theme_bw()+coord_flip()
+              
+              
+                })
+```
+
+   
+Column 3
+-------------------------------------
+   
+### Next steps
+
+```{r}
+INITIALNXTSTEM <- 0.2
+# logistic curve: 100*(1/(1+exp(-x+log((1-INITIAL)/INITIAL))))
+renderGauge({
+
+    q6 <- nabc2()
+    coef_steps <- 0
+    coef_ass <- 0
+    coef_dat <- 0
+    if(nrow(q6)>0 & nrow(q6[regexpr('STEM',q6$Group)!=-1,])>0){
+      data <- q6[regexpr('STEM',q6$Group)!=-1,]
+      nexts <- paste(data$Next, collapse = "\n")
+      lines <- strsplit(nexts, '\n', fixed=T)[[1]]
+      nlines <- length(lines[nchar(lines)>2])
+      coef_steps <- nlines/3
+      
+      assigned <- length(lines[regexpr('\\]',lines)!=-1])
+      dated <- length(lines[regexpr('\\)',lines)!=-1])
+      coef_ass <- assigned/nlines
+      coef_data <- dated/nlines
+    }
+
+    data <- work()
+    coef_peer <- 0   
+    if(nrow(data)>0 & nrow(data[regexpr('STEM',data$Group)!=-1,])>0){
+      data2 <- data[regexpr('STEM',data$Group)!=-1,]
+      coef_peer <- (mean(data2$Milestone)-4)/3
+    }
+  
+
+    x <- coef_steps + coef_ass + coef_dat + coef_peer
+    print(x)
+    point <- 100*(1/(1+exp(-x+log((1-INITIALNXTSTEM)/INITIALNXTSTEM))))
+    gauge(round(point), min = 0, max = 100, symbol = '%', gaugeSectors(
+      success = c(80, 100), warning = c(40, 79), danger = c(0, 39)
+    ))
+})
+
+```    
+
+### Total next steps
+
+
+```{r}
+renderValueBox({
+  q6 <- nabc2()
+  nlines <- 0
+  if(nrow(q6)>0 & nrow(q6[regexpr('STEM',q6$Group)!=-1,])>0){
+    data <- q6[regexpr('STEM',q6$Group)!=-1,]
+    nexts <- paste(data$Next, collapse = "\n")
+    lines <- strsplit(nexts, '\n', fixed=T)[[1]]
+    nlines <- length(lines[nchar(lines)>2])
+    
+  }
+  valueBox(
+    value=nlines,
+    icon = "fa-balance-scale",
+    color="success")
+
+})
+```
+
+### Next steps with date / assignee
+
+```{r}
+renderValueBox({
+  q6 <- nabc2()
+  message <- 0
+  if(nrow(q6)>0 & nrow(q6[regexpr('STEM',q6$Group)!=-1,])>0){
+    data <- q6[regexpr('STEM',q6$Group)!=-1,]
+    nexts <- paste(data$Next, collapse = "\n")
+    lines <- strsplit(nexts, '\n', fixed=T)[[1]]
+    lines <- lines[nchar(lines)>2]
+    nlines <- length(lines)
+    assigned <- length(lines[regexpr('\\]',lines)!=-1])
+    dated <- length(lines[regexpr('\\)',lines)!=-1])
+    message <- paste(assigned, "assigned /", dated, "dated")
+  }
+  valueBox(
+    value=message,
+    icon = "fa-balance-scale",
+    color="success")
+
+})
+```
+
+### Peer assessment milestone
+
+```{r}
+
+renderPlot({
+              data <- work()
+              
+              if(nrow(data)>0 & nrow(data[regexpr('STEM',data$Group)!=-1,])>0){
+                data2 <- data[regexpr('STEM',data$Group)!=-1,]
+                ggplot(data2, aes(x=Milestone, fill="red"))+geom_density(alpha=0.2)+theme_bw()+xlim(1,7)+geom_vline(xintercept = mean(data2$Milestone))
+              }
+              
+                })
+```
+
+
+
+
+
+
+
+Informal & Workplace
+=====================================  
+    
+Column 1
+-------------------------------------
+    
+### Group formation
+    
+
+```{r}
+INITIALGRIWP <- 0.5
+# logistic curve: 100*(1/(1+exp(-x+log((1-INITIAL)/INITIAL))))
+renderGauge({
+  
+      gr <- groups()
+
+      coef_cores <- 0
+      coef_periph <- 0
+      if(nrow(gr)>0){
+        members <- gr[,c("Implication.InformalWP","Name","Email")]
+        cores <- members[regexpr('core',members$Implication.InformalWP)!=-1,]
+        print(cores)
+        periph <-  members[regexpr('loop',members$Implication.InformalWP)!=-1,]
+        print(periph)
+        
+        coef_cores <- as.numeric(nrow(cores)>1)
+        coef_periph <- as.numeric(nrow(periph)>0)
+      }
+    
+
+    x <- coef_cores + coef_periph
+    print(x)
+    point <- 100*(1/(1+exp(-x+log((1-INITIALGRIWP)/INITIALGRIWP))))
+    gauge(round(point), min = 0, max = 100, symbol = '%', gaugeSectors(
+      success = c(80, 100), warning = c(40, 79), danger = c(0, 39)
+    ))
+})
+
+```    
+
+### Core/Peripheric Members
+
+
+```{r}
+
+renderValueBox({
+              gr <- groups()
+
+              if(nrow(gr)>0){
+                members <- gr[,c("Implication.InformalWP","Name","Email")]
+                cores <- members[regexpr('core',members$Implication.InformalWP)!=-1,]
+                print(cores)
+                periph <-  members[regexpr('loop',members$Implication.InformalWP)!=-1,]
+                print(periph)
+                
+                message <- paste(nrow(cores)," core /",nrow(periph), "peripheral")
+                valueBox(
+                  value=message,
+                  icon = "fa-balance-scale",
+                  color="success")
+                }
+              })
+
+```
+
+### Core Members
+
+```{r}
+
+renderTable({
+              gr <- groups()
+
+              if(nrow(gr)>0){
+                members <- gr[,c("Implication.InformalWP","Name","Email")]
+                cores <- members[regexpr('core',members$Implication.InformalWP)!=-1,]
+                print(cores)
+                periph <-  members[regexpr('loop',members$Implication.InformalWP)!=-1,]
+                print(periph)
+                cores[,c(2:3)]
+              }
+            })
+
+```
+
+### Peripheric Members
+
+```{r}
+
+renderTable({
+              gr <- groups()
+
+              if(nrow(gr)>0){
+                members <- gr[,c("Implication.InformalWP","Name","Email")]
+                cores <- members[regexpr('core',members$Implication.InformalWP)!=-1,]
+                print(cores)
+                periph <-  members[regexpr('loop',members$Implication.InformalWP)!=-1,]
+                print(periph)
+                periph[,c(2:3)]
+              }
+            })
+
+```
+
+### Group's Email List
+    
+```{r}
+
+renderText({
+              gr <- groups()
+
+              message <- ""
+              if(nrow(gr)>0){
+                members <- gr[,c("Implication.InformalWP","Name","Email")]
+                cores <- members[regexpr('core',members$Implication.InformalWP)!=-1,]
+                print(cores)
+                periph <-  members[regexpr('loop',members$Implication.InformalWP)!=-1,]
+                print(periph)
+                message <- paste(cores$Email, periph$Email, sep=", ", collapse = ", ")
+              }
+              message
+            })
+
+```
+
+
+   
+Column 2
+-------------------------------------
+   
+### Concrete project
+
+```{r}
+INITIALPRJIWP <- 0.3
+# logistic curve: 100*(1/(1+exp(-x+log((1-INITIAL)/INITIAL))))
+renderGauge({
+  
+      q4 <- nabc1()
+      coef_nat <- 0
+      if(nrow(q4)>0 & nrow(q4[regexpr('Informal',q4$Group)!=-1,])>0){
+        nature <- q4[regexpr('Informal',q4$Group)!=-1,"Nature"]
+        
+        message <- as.character(nature)
+        message <- paste(message, collapse = ", ")
+        if(nchar(message)>0) coef_nat <- 1
+      }
+
+      data <- work()
+      coef_peer <- 0
+      if(nrow(data)>0 & nrow(data[regexpr('Informal',data$Group)!=-1,])>0){
+          data2 <- data[regexpr('Informal',data$Group)!=-1,]
+          coef_peer <- (mean(data2$Concreteness)-4)/3
+      }
+
+      data <- inboxIWP()
+      coef_sent <- 0
+      if(nrow(data)>0){
+        fb <- paste(data$Idea, collapse=" ")
+        poa_word_v <- get_tokens(fb, pattern = "\\W")
+        print(paste("iwp inbox:",poa_word_v))
+        syuzhet_vector <- get_sentiment(poa_word_v, method="syuzhet")
+        coef_sent <- round(mean(syuzhet_vector), digits=3)
+      }
+
+      
+      q4 <- nabc1()
+      q6 <- nabc2()
+      
+      counts <- data.frame(Context=c(0),Problem=c(0),Pedagogical=c(0), Technological=c(0),
+                           Benefit=c(0), Current=c(0), Alternative=c(0), Milestone=c(0))
+      if(nrow(q4)>0 | nrow(q6)>0){
+        if(nrow(q4)>0 & nrow(q4[regexpr('Informal',q4$Group)!=-1,])>0){
+          q4iwp <- q4[regexpr('Informal',q4$Group)!=-1,]
+          context <- q4iwp[,c("Context","Timestamp")]
+          counts[1,'Context'] <- sum(sapply(context$Context,FUN = count_words))
+          problem <- q4iwp[,c("Problem","Timestamp")]
+          counts[1,'Problem'] <- sum(sapply(problem$Problem,FUN = count_words))
+          pedag <- q4iwp[,c("Pedagogical","Timestamp")]
+          counts[1,'Pedagogical'] <- sum(sapply(pedag$Pedagogical,FUN = count_words))
+          tech <- q4iwp[,c("Technological","Timestamp")]
+          counts[1,'Technological'] <- sum(sapply(tech$Technological,FUN = count_words))
+        }
+        if(nrow(q6)>0 & nrow(q6[regexpr('Informal',q6$Group)!=-1,])>0){
+          q6iwp <- q6[regexpr('Informal',q6$Group)!=-1,]
+          print(q6iwp)
+          ben <- q6iwp[,c("Benefit","Timestamp")]
+          counts[1,'Benefit'] <- sum(sapply(ben$Benefit,FUN = count_words))
+          curr <- q6iwp[,c("Current","Timestamp")]
+          counts[1,'Current'] <- sum(sapply(curr$Current,FUN = count_words))
+          alt <- q6iwp[,c("Alternative","Timestamp")]
+          counts[1,'Alternative'] <- sum(sapply(alt$Alternative,FUN = count_words))
+          mil <- q6iwp[,c("Milestone","Timestamp")]
+          counts[1,'Milestone'] <- sum(sapply(mil$Milestone,FUN = count_words))
+        }
+      }
+      
+      melted <- melt(counts)
+      coef_prop <- sum(melted$value>30)/8 # We count how many fields have more than 30 words
+      print("coef_prop")
+      print(coef_prop)
+
+    x <- coef_nat + coef_peer + coef_sent + coef_prop
+    print(x)
+    point <- 100*(1/(1+exp(-x+log((1-INITIALGRIWP)/INITIALGRIWP))))
+    gauge(round(point), min = 0, max = 100, symbol = '%', gaugeSectors(
+      success = c(80, 100), warning = c(40, 79), danger = c(0, 39)
+    ))
+})
+
+```    
+
+
+### Nature of project {data-height=200}
+
+```{r}
+
+renderText({
+              q4 <- nabc1()
+              message <- ""
+              if(nrow(q4)>0 & nrow(q4[regexpr('Informal',q4$Group)!=-1,])>0){
+                nature <- q4[regexpr('Informal',q4$Group)!=-1,"Nature"]
+                
+                message <- as.character(nature)
+                message <- paste(message, collapse = ", ")
+              }
+              message
+            })
+
+```
+
+### Peer assessment concreteness
+
+```{r}
+
+renderPlot({
+              data <- work()
+              
+              if(nrow(data)>0 & nrow(data[regexpr('Informal',data$Group)!=-1,])>0){
+                data2 <- data[regexpr('Informal',data$Group)!=-1,]
+                ggplot(data2, aes(x=Concreteness, fill="red"))+geom_density(alpha=0.2)+theme_bw()+xlim(1,7)+geom_vline(xintercept = mean(data2$Concreteness))
+              }
+              
+                })
+```
+
+### Inbox's sentiment
+
+```{r}
+
+renderValueBox({
+              data <- inboxIWP()
+              val <- 0
+              if(nrow(data)>0){
+                fb <- paste(data$Idea, collapse=" ")
+                poa_word_v <- get_tokens(fb, pattern = "\\W")
+                print(paste("iwp inbox:",poa_word_v))
+                syuzhet_vector <- get_sentiment(poa_word_v, method="syuzhet")
+                val <- round(mean(syuzhet_vector), digits=3)
+              }
+              
+              valueBox(
+                value=val,
+                icon = "fa-smile-o",
+                color="primary")
+            })
+
+
+
+```   
+
+### Word count in proposal {data-height=700}
+
+```{r}
+
+renderPlot({
+              q4 <- nabc1()
+              q6 <- nabc2()
+              
+              counts <- data.frame(Context=c(0),Problem=c(0),Pedagogical=c(0), Technological=c(0),
+                                   Benefit=c(0), Current=c(0), Alternative=c(0), Milestone=c(0))
+
+              if(nrow(q4)>0 | nrow(q6)>0){
+                if(nrow(q4)>0 & nrow(q4[regexpr('Informal',q4$Group)!=-1,])>0){
+                  q4iwp <- q4[regexpr('Informal',q4$Group)!=-1,]
+                  context <- q4iwp[,c("Context","Timestamp")]
+                  counts[1,'Context'] <- sum(sapply(context$Context,FUN = count_words))
+                  problem <- q4iwp[,c("Problem","Timestamp")]
+                  counts[1,'Problem'] <- sum(sapply(problem$Problem,FUN = count_words))
+                  pedag <- q4iwp[,c("Pedagogical","Timestamp")]
+                  counts[1,'Pedagogical'] <- sum(sapply(pedag$Pedagogical,FUN = count_words))
+                  tech <- q4iwp[,c("Technological","Timestamp")]
+                  counts[1,'Technological'] <- sum(sapply(tech$Technological,FUN = count_words))
+                }
+                if(nrow(q6)>0 & nrow(q6[regexpr('Informal',q6$Group)!=-1,])>0){
+                  q6iwp <- q6[regexpr('Informal',q6$Group)!=-1,]
+                  print(q6iwp)
+                  ben <- q6iwp[,c("Benefit","Timestamp")]
+                  counts[1,'Benefit'] <- sum(sapply(ben$Benefit,FUN = count_words))
+                  curr <- q6iwp[,c("Current","Timestamp")]
+                  counts[1,'Current'] <- sum(sapply(curr$Current,FUN = count_words))
+                  alt <- q6iwp[,c("Alternative","Timestamp")]
+                  counts[1,'Alternative'] <- sum(sapply(alt$Alternative,FUN = count_words))
+                  mil <- q6iwp[,c("Milestone","Timestamp")]
+                  counts[1,'Milestone'] <- sum(sapply(mil$Milestone,FUN = count_words))
+                }
+              }
+              
+              melted <- melt(counts)
+              
+              ggplot(melted, aes(x=variable, y=value, fill=variable))+geom_bar(stat='identity', alpha=0.2)+theme_bw()+coord_flip()
+              
+              
+                })
+```
+
+   
+Column 3
+-------------------------------------
+   
+### Next steps
+
+```{r}
+INITIALNXTIWP <- 0.2
+# logistic curve: 100*(1/(1+exp(-x+log((1-INITIAL)/INITIAL))))
+renderGauge({
+
+    q6 <- nabc2()
+    coef_steps <- 0
+    coef_ass <- 0
+    coef_dat <- 0
+    if(nrow(q6)>0 & nrow(q6[regexpr('Informal',q6$Group)!=-1,])>0){
+      data <- q6[regexpr('Informal',q6$Group)!=-1,]
+      nexts <- paste(data$Next, collapse = "\n")
+      lines <- strsplit(nexts, '\n', fixed=T)[[1]]
+      nlines <- length(lines[nchar(lines)>2])
+      coef_steps <- nlines/3
+      
+      assigned <- length(lines[regexpr('\\]',lines)!=-1])
+      dated <- length(lines[regexpr('\\)',lines)!=-1])
+      coef_ass <- assigned/nlines
+      coef_data <- dated/nlines
+    }
+
+    data <- work()
+    coef_peer <- 0   
+    if(nrow(data)>0 & nrow(data[regexpr('Informal',data$Group)!=-1,])>0){
+      data2 <- data[regexpr('Informal',data$Group)!=-1,]
+      coef_peer <- (mean(data2$Milestone)-4)/3
+    }
+  
+
+    x <- coef_steps + coef_ass + coef_dat + coef_peer
+    print(x)
+    point <- 100*(1/(1+exp(-x+log((1-INITIALNXTIWP)/INITIALNXTIWP))))
+    gauge(round(point), min = 0, max = 100, symbol = '%', gaugeSectors(
+      success = c(80, 100), warning = c(40, 79), danger = c(0, 39)
+    ))
+})
+
+```    
+
+### Total next steps
+
+
+```{r}
+renderValueBox({
+  q6 <- nabc2()
+  nlines <- 0
+  if(nrow(q6)>0 & nrow(q6[regexpr('Informal',q6$Group)!=-1,])>0){
+    data <- q6[regexpr('Informal',q6$Group)!=-1,]
+    nexts <- paste(data$Next, collapse = "\n")
+    lines <- strsplit(nexts, '\n', fixed=T)[[1]]
+    nlines <- length(lines[nchar(lines)>2])
+    
+  }
+  valueBox(
+    value=nlines,
+    icon = "fa-balance-scale",
+    color="success")
+
+})
+```
+
+### Next steps with date / assignee
+
+```{r}
+renderValueBox({
+  q6 <- nabc2()
+  message <- 0
+  if(nrow(q6)>0 & nrow(q6[regexpr('Informal',q6$Group)!=-1,])>0){
+    data <- q6[regexpr('Informal',q6$Group)!=-1,]
+    nexts <- paste(data$Next, collapse = "\n")
+    lines <- strsplit(nexts, '\n', fixed=T)[[1]]
+    lines <- lines[nchar(lines)>2]
+    nlines <- length(lines)
+    assigned <- length(lines[regexpr('\\]',lines)!=-1])
+    dated <- length(lines[regexpr('\\)',lines)!=-1])
+    message <- paste(assigned, "assigned /", dated, "dated")
+  }
+  valueBox(
+    value=message,
+    icon = "fa-balance-scale",
+    color="success")
+
+})
+```
+
+### Peer assessment milestone
+
+```{r}
+
+renderPlot({
+              data <- work()
+              
+              if(nrow(data)>0 & nrow(data[regexpr('Informal',data$Group)!=-1,])>0){
+                data2 <- data[regexpr('Informal',data$Group)!=-1,]
+                ggplot(data2, aes(x=Milestone, fill="red"))+geom_density(alpha=0.2)+theme_bw()+xlim(1,7)+geom_vline(xintercept = mean(data2$Milestone))
+              }
+              
+                })
+```
+
+
+
+
+
+
+Inclusive Education
+=====================================  
+    
+Column 1
+-------------------------------------
+    
+### Group formation
+    
+
+```{r}
+INITIALGRIE <- 0.5
+# logistic curve: 100*(1/(1+exp(-x+log((1-INITIAL)/INITIAL))))
+renderGauge({
+  
+      gr <- groups()
+
+      coef_cores <- 0
+      coef_periph <- 0
+      if(nrow(gr)>0){
+        members <- gr[,c("Implication.Inclusive","Name","Email")]
+        cores <- members[regexpr('core',members$Implication.Inclusive)!=-1,]
+        print(cores)
+        periph <-  members[regexpr('loop',members$Implication.Inclusive)!=-1,]
+        print(periph)
+        
+        coef_cores <- as.numeric(nrow(cores)>1)
+        coef_periph <- as.numeric(nrow(periph)>0)
+      }
+    
+
+    x <- coef_cores + coef_periph
+    print(x)
+    point <- 100*(1/(1+exp(-x+log((1-INITIALGRIE)/INITIALGRIE))))
+    gauge(round(point), min = 0, max = 100, symbol = '%', gaugeSectors(
+      success = c(80, 100), warning = c(40, 79), danger = c(0, 39)
+    ))
+})
+
+```    
+
+### Core/Peripheric Members
+
+
+```{r}
+
+renderValueBox({
+              gr <- groups()
+
+              if(nrow(gr)>0){
+                members <- gr[,c("Implication.Inclusive","Name","Email")]
+                cores <- members[regexpr('core',members$Implication.Inclusive)!=-1,]
+                print(cores)
+                periph <-  members[regexpr('loop',members$Implication.Inclusive)!=-1,]
+                print(periph)
+                
+                message <- paste(nrow(cores)," core /",nrow(periph), "peripheral")
+                valueBox(
+                  value=message,
+                  icon = "fa-balance-scale",
+                  color="success")
+                }
+              })
+
+```
+
+### Core Members
+
+```{r}
+
+renderTable({
+              gr <- groups()
+
+              if(nrow(gr)>0){
+                members <- gr[,c("Implication.Inclusive","Name","Email")]
+                cores <- members[regexpr('core',members$Implication.Inclusive)!=-1,]
+                print(cores)
+                periph <-  members[regexpr('loop',members$Implication.Inclusive)!=-1,]
+                print(periph)
+                cores[,c(2:3)]
+              }
+            })
+
+```
+
+### Peripheric Members
+
+```{r}
+
+renderTable({
+              gr <- groups()
+
+              if(nrow(gr)>0){
+                members <- gr[,c("Implication.Inclusive","Name","Email")]
+                cores <- members[regexpr('core',members$Implication.Inclusive)!=-1,]
+                print(cores)
+                periph <-  members[regexpr('loop',members$Implication.Inclusive)!=-1,]
+                print(periph)
+                periph[,c(2:3)]
+              }
+            })
+
+```
+
+### Group's Email List
+    
+```{r}
+
+renderText({
+              gr <- groups()
+
+              message <- ""
+              if(nrow(gr)>0){
+                members <- gr[,c("Implication.Inclusive","Name","Email")]
+                cores <- members[regexpr('core',members$Implication.Inclusive)!=-1,]
+                print(cores)
+                periph <-  members[regexpr('loop',members$Implication.Inclusive)!=-1,]
+                print(periph)
+                message <- paste(cores$Email, periph$Email, sep=", ", collapse = ", ")
+              }
+              message
+            })
+
+```
+
+
+   
+Column 2
+-------------------------------------
+   
+### Concrete project
+
+```{r}
+INITIALPRJIE <- 0.3
+# logistic curve: 100*(1/(1+exp(-x+log((1-INITIAL)/INITIAL))))
+renderGauge({
+  
+      q4 <- nabc1()
+      coef_nat <- 0
+      if(nrow(q4)>0 & nrow(q4[regexpr('Inclusive',q4$Group)!=-1,])>0){
+        nature <- q4[regexpr('Inclusive',q4$Group)!=-1,"Nature"]
+        
+        message <- as.character(nature)
+        message <- paste(message, collapse = ", ")
+        if(nchar(message)>0) coef_nat <- 1
+      }
+
+      data <- work()
+      coef_peer <- 0
+      if(nrow(data)>0 & nrow(data[regexpr('Inclusive',data$Group)!=-1,])>0){
+          data2 <- data[regexpr('Inclusive',data$Group)!=-1,]
+          coef_peer <- (mean(data2$Concreteness)-4)/3
+      }
+
+      data <- inboxIE()
+      coef_sent <- 0
+      if(nrow(data)>0){
+        fb <- paste(data$Idea, collapse=" ")
+        poa_word_v <- get_tokens(fb, pattern = "\\W")
+        print(paste("ie inbox:",poa_word_v))
+        syuzhet_vector <- get_sentiment(poa_word_v, method="syuzhet")
+        coef_sent <- round(mean(syuzhet_vector), digits=3)
+      }
+
+      
+      q4 <- nabc1()
+      q6 <- nabc2()
+      
+      counts <- data.frame(Context=c(0),Problem=c(0),Pedagogical=c(0), Technological=c(0),
+                           Benefit=c(0), Current=c(0), Alternative=c(0), Milestone=c(0))
+      if(nrow(q4)>0 | nrow(q6)>0){
+        if(nrow(q4)>0 & nrow(q4[regexpr('Inclusive',q4$Group)!=-1,])>0){
+          q4ie <- q4[regexpr('Inclusive',q4$Group)!=-1,]
+          context <- q4ie[,c("Context","Timestamp")]
+          counts[1,'Context'] <- sum(sapply(context$Context,FUN = count_words))
+          problem <- q4ie[,c("Problem","Timestamp")]
+          counts[1,'Problem'] <- sum(sapply(problem$Problem,FUN = count_words))
+          pedag <- q4ie[,c("Pedagogical","Timestamp")]
+          counts[1,'Pedagogical'] <- sum(sapply(pedag$Pedagogical,FUN = count_words))
+          tech <- q4ie[,c("Technological","Timestamp")]
+          counts[1,'Technological'] <- sum(sapply(tech$Technological,FUN = count_words))
+        }
+        if(nrow(q6)>0 & nrow(q6[regexpr('Inclusive',q6$Group)!=-1,])>0){
+          q6ie <- q6[regexpr('Inclusive',q6$Group)!=-1,]
+          print(q6ie)
+          ben <- q6ie[,c("Benefit","Timestamp")]
+          counts[1,'Benefit'] <- sum(sapply(ben$Benefit,FUN = count_words))
+          curr <- q6ie[,c("Current","Timestamp")]
+          counts[1,'Current'] <- sum(sapply(curr$Current,FUN = count_words))
+          alt <- q6ie[,c("Alternative","Timestamp")]
+          counts[1,'Alternative'] <- sum(sapply(alt$Alternative,FUN = count_words))
+          mil <- q6ie[,c("Milestone","Timestamp")]
+          counts[1,'Milestone'] <- sum(sapply(mil$Milestone,FUN = count_words))
+        }
+      }
+      
+      melted <- melt(counts)
+      coef_prop <- sum(melted$value>30)/8 # We count how many fields have more than 30 words
+      print("coef_prop")
+      print(coef_prop)
+
+    x <- coef_nat + coef_peer + coef_sent + coef_prop
+    print(x)
+    point <- 100*(1/(1+exp(-x+log((1-INITIALPRJIE)/INITIALPRJIE))))
+    gauge(round(point), min = 0, max = 100, symbol = '%', gaugeSectors(
+      success = c(80, 100), warning = c(40, 79), danger = c(0, 39)
+    ))
+})
+
+```    
+
+
+### Nature of project {data-height=200}
+
+```{r}
+
+renderText({
+              q4 <- nabc1()
+              message <- ""
+              if(nrow(q4)>0 & nrow(q4[regexpr('Inclusive',q4$Group)!=-1,])>0){
+                nature <- q4[regexpr('Inclusive',q4$Group)!=-1,"Nature"]
+                
+                message <- as.character(nature)
+                message <- paste(message, collapse = ", ")
+              }
+              message
+            })
+
+```
+
+### Peer assessment concreteness
+
+```{r}
+
+renderPlot({
+              data <- work()
+              
+              if(nrow(data)>0 & nrow(data[regexpr('Inclusive',data$Group)!=-1,])>0){
+                data2 <- data[regexpr('Inclusive',data$Group)!=-1,]
+                ggplot(data2, aes(x=Concreteness, fill="red"))+geom_density(alpha=0.2)+theme_bw()+xlim(1,7)+geom_vline(xintercept = mean(data2$Concreteness))
+              }
+              
+                })
+```
+
+### Inbox's sentiment
+
+```{r}
+
+renderValueBox({
+              data <- inboxIE()
+              val <- 0
+              if(nrow(data)>0){
+                fb <- paste(data$Idea, collapse=" ")
+                poa_word_v <- get_tokens(fb, pattern = "\\W")
+                print(paste("ie inbox:",poa_word_v))
+                syuzhet_vector <- get_sentiment(poa_word_v, method="syuzhet")
+                val <- round(mean(syuzhet_vector), digits=3)
+              }
+              
+              valueBox(
+                value=val,
+                icon = "fa-smile-o",
+                color="primary")
+            })
+
+
+
+```   
+
+### Word count in proposal {data-height=700}
+
+```{r}
+
+renderPlot({
+              q4 <- nabc1()
+              q6 <- nabc2()
+              
+              counts <- data.frame(Context=c(0),Problem=c(0),Pedagogical=c(0), Technological=c(0),
+                                   Benefit=c(0), Current=c(0), Alternative=c(0), Milestone=c(0))
+
+              if(nrow(q4)>0 | nrow(q6)>0){
+                if(nrow(q4)>0 & nrow(q4[regexpr('Inclusive',q4$Group)!=-1,])>0){
+                  q4ie <- q4[regexpr('Inclusive',q4$Group)!=-1,]
+                  context <- q4ie[,c("Context","Timestamp")]
+                  counts[1,'Context'] <- sum(sapply(context$Context,FUN = count_words))
+                  problem <- q4ie[,c("Problem","Timestamp")]
+                  counts[1,'Problem'] <- sum(sapply(problem$Problem,FUN = count_words))
+                  pedag <- q4ie[,c("Pedagogical","Timestamp")]
+                  counts[1,'Pedagogical'] <- sum(sapply(pedag$Pedagogical,FUN = count_words))
+                  tech <- q4ie[,c("Technological","Timestamp")]
+                  counts[1,'Technological'] <- sum(sapply(tech$Technological,FUN = count_words))
+                }
+                if(nrow(q6)>0 & nrow(q6[regexpr('Inclusive',q6$Group)!=-1,])>0){
+                  q6ie <- q6[regexpr('Inclusive',q6$Group)!=-1,]
+                  print(q6ie)
+                  ben <- q6ie[,c("Benefit","Timestamp")]
+                  counts[1,'Benefit'] <- sum(sapply(ben$Benefit,FUN = count_words))
+                  curr <- q6ie[,c("Current","Timestamp")]
+                  counts[1,'Current'] <- sum(sapply(curr$Current,FUN = count_words))
+                  alt <- q6ie[,c("Alternative","Timestamp")]
+                  counts[1,'Alternative'] <- sum(sapply(alt$Alternative,FUN = count_words))
+                  mil <- q6ie[,c("Milestone","Timestamp")]
+                  counts[1,'Milestone'] <- sum(sapply(mil$Milestone,FUN = count_words))
+                }
+              }
+              
+              melted <- melt(counts)
+              
+              ggplot(melted, aes(x=variable, y=value, fill=variable))+geom_bar(stat='identity', alpha=0.2)+theme_bw()+coord_flip()
+              
+              
+                })
+```
+
+   
+Column 3
+-------------------------------------
+   
+### Next steps
+
+```{r}
+INITIALNXTIE <- 0.2
+# logistic curve: 100*(1/(1+exp(-x+log((1-INITIAL)/INITIAL))))
+renderGauge({
+
+    q6 <- nabc2()
+    coef_steps <- 0
+    coef_ass <- 0
+    coef_dat <- 0
+    if(nrow(q6)>0 & nrow(q6[regexpr('Inclusive',q6$Group)!=-1,])>0){
+      data <- q6[regexpr('Inclusive',q6$Group)!=-1,]
+      nexts <- paste(data$Next, collapse = "\n")
+      lines <- strsplit(nexts, '\n', fixed=T)[[1]]
+      nlines <- length(lines[nchar(lines)>2])
+      coef_steps <- nlines/3
+      
+      assigned <- length(lines[regexpr('\\]',lines)!=-1])
+      dated <- length(lines[regexpr('\\)',lines)!=-1])
+      coef_ass <- assigned/nlines
+      coef_data <- dated/nlines
+    }
+
+    data <- work()
+    coef_peer <- 0   
+    if(nrow(data)>0 & nrow(data[regexpr('Inclusive',data$Group)!=-1,])>0){
+      data2 <- data[regexpr('Inclusive',data$Group)!=-1,]
+      coef_peer <- (mean(data2$Milestone)-4)/3
+    }
+  
+
+    x <- coef_steps + coef_ass + coef_dat + coef_peer
+    print(x)
+    point <- 100*(1/(1+exp(-x+log((1-INITIALNXTIE)/INITIALNXTIE))))
+    gauge(round(point), min = 0, max = 100, symbol = '%', gaugeSectors(
+      success = c(80, 100), warning = c(40, 79), danger = c(0, 39)
+    ))
+})
+
+```    
+
+### Total next steps
+
+
+```{r}
+renderValueBox({
+  q6 <- nabc2()
+  nlines <- 0
+  if(nrow(q6)>0 & nrow(q6[regexpr('Inclusive',q6$Group)!=-1,])>0){
+    data <- q6[regexpr('Inclusive',q6$Group)!=-1,]
+    nexts <- paste(data$Next, collapse = "\n")
+    lines <- strsplit(nexts, '\n', fixed=T)[[1]]
+    nlines <- length(lines[nchar(lines)>2])
+    
+  }
+  valueBox(
+    value=nlines,
+    icon = "fa-balance-scale",
+    color="success")
+
+})
+```
+
+### Next steps with date / assignee
+
+```{r}
+renderValueBox({
+  q6 <- nabc2()
+  message <- 0
+  if(nrow(q6)>0 & nrow(q6[regexpr('Inclusive',q6$Group)!=-1,])>0){
+    data <- q6[regexpr('Inclusive',q6$Group)!=-1,]
+    nexts <- paste(data$Next, collapse = "\n")
+    lines <- strsplit(nexts, '\n', fixed=T)[[1]]
+    lines <- lines[nchar(lines)>2]
+    nlines <- length(lines)
+    assigned <- length(lines[regexpr('\\]',lines)!=-1])
+    dated <- length(lines[regexpr('\\)',lines)!=-1])
+    message <- paste(assigned, "assigned /", dated, "dated")
+  }
+  valueBox(
+    value=message,
+    icon = "fa-balance-scale",
+    color="success")
+
+})
+```
+
+### Peer assessment milestone
+
+```{r}
+
+renderPlot({
+              data <- work()
+              
+              if(nrow(data)>0 & nrow(data[regexpr('Inclusive',data$Group)!=-1,])>0){
+                data2 <- data[regexpr('Inclusive',data$Group)!=-1,]
+                ggplot(data2, aes(x=Milestone, fill="red"))+geom_density(alpha=0.2)+theme_bw()+xlim(1,7)+geom_vline(xintercept = mean(data2$Milestone))
+              }
+              
+                })
+```
+
+
+
+
