@@ -1,0 +1,517 @@
+---
+title: "Everyday LA meeting (Flexboard)"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(gsheet)
+suppressMessages(library(dplyr))
+library(data.table)
+library(rvest)
+library(ggplot2)
+library(ineq)
+library(syuzhet)
+
+URL_GOALS_RAW <- 'https://raw.githubusercontent.com/lprisan/EverydayLA-Prototype1/gh-pages/_includes/goals.md'
+URL_GOALS <- 'https://github.com/lprisan/EverydayLA-Prototype1/blob/gh-pages/_includes/goals.md'
+NUM_GOALS <- 4
+URL_DESIGN_RAW <- 'https://raw.githubusercontent.com/lprisan/EverydayLA-Prototype1/gh-pages/_includes/design.md'
+URL_DESIGN <- 'https://github.com/lprisan/EverydayLA-Prototype1/blob/gh-pages/_includes/design.md'
+NUM_ACTS <- 7
+NUM_METRIC_CHARS <- 999
+URL_HOMEWORK <- 'https://docs.google.com/spreadsheets/d/14NTHdvt5lEv-sbSpUli6gCx9TOmf8bOCLbFsb6ezNSA/edit?usp=sharing'
+URL_PRESENTATION <- 'https://docs.google.com/spreadsheets/d/1fykR8lJDSS_VMOfJkr59CgVCqWhX8e3UupBelq5pnBE/edit?usp=sharing'
+URL_DEBATE <- 'https://docs.google.com/spreadsheets/d/124cpUd2kFdQlyDlX9TPByrVlDn4R8nexT9rcoFCiehM/edit?usp=sharing'
+URL_NEXT_RAW <- 'https://raw.githubusercontent.com/lprisan/EverydayLA-Prototype1/gh-pages/_includes/next.md'
+URL_NEXT <- 'https://github.com/lprisan/EverydayLA-Prototype1/blob/gh-pages/_includes/next.md'
+
+
+# Define the data gathering function here? possibly using
+# http://shiny.rstudio.com/reference/shiny/latest/reactivePoll.html
+# http://shiny.rstudio.com/gallery/reactive-poll-and-file-reader.html
+pollGoals <- reactivePoll(5000, session,
+                     readTimestamp <- function(){
+                        # We read the latest response timestamp
+                        # Does not work! github does not update the interface consistently on every commit!
+                        #githubdat <- read_html(URL_GOALS)
+                        #timestamp <- githubdat %>% html_node('relative-time') %>% html_attr('datetime')
+                       timeMillis <- as.character(as.numeric(Sys.time())*1000, digits=13)
+                        data <- scan(paste(URL_GOALS_RAW,"?",timeMillis,sep=""), what=character(), sep="\n") 
+                        timestamp <- paste(data, collapse = "")
+                        timestamp
+                      },
+                     readValue <- function(){
+                        timeMillis <- as.character(as.numeric(Sys.time())*1000, digits=13)
+                        data <- scan(paste(URL_GOALS_RAW,"?",timeMillis,sep=""), what=character(), sep="\n")
+                        data
+                      })
+
+pollDesign <- reactivePoll(5000, session,
+                     readTimestamp <- function(){
+                        # We read the latest response timestamp
+                        #githubdat <- read_html(URL_DESIGN)
+                        #timestamp <- githubdat %>% html_node('relative-time') %>% html_attr('datetime')
+                       timeMillis <- as.character(as.numeric(Sys.time())*1000, digits=13)
+                        data <- scan(paste(URL_DESIGN_RAW,"?",timeMillis,sep=""), what=character(), sep="\n")  
+                        timestamp <- paste(data, collapse = "")
+                        timestamp
+                      },
+                     readValue <- function(){
+                        timeMillis <- as.character(as.numeric(Sys.time())*1000, digits=13)
+                        data <- scan(paste(URL_DESIGN_RAW,"?",timeMillis,sep=""), what=character(), sep="\n")  
+                        data
+                      })
+
+pollNext <- reactivePoll(5000, session,
+                     readTimestamp <- function(){
+                        # We read the latest response timestamp
+                        #githubdat <- read_html(URL_NEXT)
+                        #timestamp <- githubdat %>% html_node('relative-time') %>% html_attr('datetime')
+                        timeMillis <- as.character(as.numeric(Sys.time())*1000, digits=13)
+                        data <- scan(paste(URL_NEXT_RAW,"?",timeMillis,sep=""), what=character(), sep="\n")
+                        timestamp <- paste(data, collapse = "")
+                        print(timestamp)
+                        timestamp
+                      },
+                     readValue <- function(){
+                        timeMillis <- as.character(as.numeric(Sys.time())*1000, digits=13)
+                        data <- scan(paste(URL_NEXT_RAW,"?",timeMillis,sep=""), what=character(), sep="\n")
+                        data
+                      })
+
+
+pollHomework <- reactivePoll(5000, session,
+                     readLastTimestamp <- function(){
+                        # We read the latest response timestamp
+                        data <- as.data.frame(gsheet2tbl(URL_HOMEWORK))
+                        if(nrow(data)>0 && ncol(data)>1){
+                          data[nrow(data),1]
+                        }else{
+                          ""
+                        }
+                      },
+                     readValue <- function(){
+                        data <- as.data.frame(gsheet2tbl(URL_HOMEWORK))
+                        #We clean it up a bit
+                        names(data) <- c("Timestamp","Homework")
+                        data$Homework <- as.factor(data$Homework)
+                        data
+                      })
+
+pollPresentation <- reactivePoll(5000, session,
+                     readLastTimestamp <- function(){
+                        # We read the latest response timestamp
+                        data <- as.data.frame(gsheet2tbl(URL_PRESENTATION))
+                        if(nrow(data)>0 && ncol(data)>1){
+                          data[nrow(data),1]
+                        }else{
+                          ""
+                        }
+                      },
+                     readValue <- function(){
+                        data <- as.data.frame(gsheet2tbl(URL_PRESENTATION))
+                        #We clean it up a bit
+                        names(data) <- c("Timestamp","WMN",
+                                         "Idea1","Idea2","Idea3",
+                                         "Idea4","Idea5","Idea6",
+                                         "Idea7","Idea8","Idea9",
+                                         "Idea10")
+                        data
+                      })
+
+getFactorNumber <- function(data, value){
+  n <- as.integer(table(data$Homework)[value])
+  n
+}
+
+pollDebateFinal <- reactivePoll(5000, session,
+                     readLastTimestamp <- function(){
+                        # We read the latest response timestamp
+                        data <- as.data.frame(gsheet2tbl(URL_DEBATE))
+                        if(nrow(data)>0 && ncol(data)>1){
+                          data[nrow(data),1]
+                        }else{
+                          ""
+                        }
+                      },
+                     readValue <- function(){
+                        data <- as.data.frame(gsheet2tbl(URL_DEBATE))
+                        #We clean it up a bit
+                        names(data) <- c("Timestamp","Participated",
+                                         "Decision","Percent.Participation","Q.Main.Problems",
+                                         "Q.Main.Points","Q.Loops","Reflection")
+                        data
+                      })
+
+
+# Homework Q
+reads <- reactive(getFactorNumber(pollHomework(), 'Yes, fully'))
+skims <- reactive(getFactorNumber(pollHomework(), 'I skimmed through it quickly'))
+nowork <- reactive(getFactorNumber(pollHomework(), 'No'))
+
+# Goals
+newgoals <- reactive({
+              text <- pollGoals()
+              print(paste('len goals text',length(text)))
+              (length(text)-NUM_GOALS-1)
+            })
+
+
+# Contributed ideas during presentation
+wordsDoc <- 1200
+
+ideas <- reactive({
+  data <- pollPresentation()
+  # Aggregate person, ideas and characters for each idea
+  ideas <- data.frame(person_id=numeric(), idea_id=numeric(), ideatext=character(), chars=numeric(), words=numeric())
+  idea_counter = 1;
+  for(i in 1:nrow(data)){
+    # How many non-null ideas?
+    for(j in 3:12){
+      if(!is.na(data[i,j]) & nchar(data[i,j])>1){
+        # Count characters
+        idea = data.frame(person_id=i, idea_id=idea_counter, ideatext=data[i,j], chars=nchar(data[i,j]), words=vapply(strsplit(data[i,j], "\\W+"), length, integer(1)))
+        idea_counter <- idea_counter+1
+        if(nrow(ideas)==0) ideas <- idea
+        else ideas <- rbind(ideas,idea)
+      }
+    }
+    
+  }
+  ideas
+})
+
+# Subjective with-me-ness during presentation
+wmn <- reactive({
+  data <- pollPresentation()
+  as.numeric(data$WMN)
+})
+
+
+# Next steps
+nexts <- reactive({
+              text <- pollNext()
+              (length(text)-1)
+            })
+
+# Decision (explicit)
+decs <- reactive({
+              deb <- pollDebateFinal()
+              as.factor(deb$Decision)
+            })
+
+debpart <- reactive({
+  deb <- pollDebateFinal()
+  as.numeric(deb$Percent.Participation)
+})
+
+answers <- reactive({
+              deb <- pollDebateFinal()
+              data <- data.frame(q1=as.factor(deb$Q.Main.Problems),q2=as.factor(deb$Q.Main.Point), q3=as.factor(deb$Q.Loops))
+              data
+            })
+correct.ans <- c(q1='It is slow and does not scale well',q2='That the proposed solutions are used every day',q3='Two, labeled \'every day (frequency)\' and \'every school\' (scale)')
+
+participates <- reactive({
+  deb <- pollDebateFinal()
+  as.factor(deb$Participated)
+})
+
+reflectext <- reactive({
+  deb <- pollDebateFinal()
+  refls <- paste(deb$Reflection,collapse = " ")
+  refls
+})
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Get the point across
+
+```{r}
+INITIALPOINT <- 0.2
+# logistic curve: 100*(1/(1+exp(-x+log((1-INITIAL)/INITIAL))))
+renderGauge({
+    totalhomework <- reads()+skims()+nowork()
+    debdata <- answers()
+    q1 <- round((nrow(debdata[debdata$q1==correct.ans['q1'],])/nrow(debdata)), digits=2)
+    q2 <- round((nrow(debdata[debdata$q2==correct.ans['q2'],])/nrow(debdata)), digits=2)
+    q3 <- round((nrow(debdata[debdata$q3==correct.ans['q3'],])/nrow(debdata)), digits=2)
+    print(paste(totalhomework,q1,q2,q3))
+    x <- ((reads()/totalhomework)+(skims()/(2*totalhomework))) + # for homework
+          (mean(wmn()))/10 + # For attention/WMN
+          (q1-0.2) + (q2-0.2) + (q3-0.2) # For the content questions
+    print(x)
+    point <- 100*(1/(1+exp(-x+log((1-INITIALPOINT)/INITIALPOINT))))
+    gauge(round(point), min = 0, max = 100, symbol = '%', gaugeSectors(
+      success = c(80, 100), warning = c(40, 79), danger = c(0, 39)
+    ))
+})
+
+```
+
+### (Equal) Participation
+
+```{r}
+INITIALPART <- 0.4
+# logistic curve: 100*(1/(1+exp(-x+log((1-INITIAL)/INITIAL))))
+renderGauge({
+    id <- ideas()
+    part <- debpart()
+    t <- table(id$person_id)
+    eq.id <- round(1-ineq(t, type="entropy"), digits=2)
+    eq.deb <- round(1-ineq(part, type="entropy"), digits=2)
+    part <- participates()
+
+    x <- 2*(sum(id$words)/wordsDoc) + # for participation vs. original
+      ((eq.id) + (eq.deb))/2 # for equalities
+      2*(sum(part=='Yes')/length(part)) # for explicit participation in debate
+    print(x)
+    point <- 100*(1/(1+exp(-x+log((1-INITIALPART)/INITIALPART))))
+    gauge(round(point), min = 0, max = 100, symbol = '%', gaugeSectors(
+      success = c(80, 100), warning = c(40, 79), danger = c(0, 39)
+    ))
+})
+```
+
+### Take a (positive?) decision
+
+```{r}
+INITIALDEC <- 0.2
+# logistic curve: 100*(1/(1+exp(-x+log((1-INITIAL)/INITIAL))))
+renderGauge({
+    dec <- decs()
+    id <- ideas() ## All the ideas together
+    postits <- paste(id$ideatext, collapse=" ")
+    poa_word_v <- get_tokens(postits, pattern = "\\W")
+    syuzhet_vector <- get_sentiment(poa_word_v, method="syuzhet")
+    ref <- reflectext() ## All the reflections together
+    poa_word_v2 <- get_tokens(ref, pattern = "\\W")
+    syuzhet_vector2 <- get_sentiment(poa_word_v2, method="syuzhet")
+
+    x <- 2*(length(dec[dec=='Yes'])-length(dec[dec=='No'])+0.3*length(dec[dec=='Needs more work']))/length(dec) + # for explicit decision
+        round(mean(syuzhet_vector), digits=3) + # For sentiment analyses
+        round(mean(syuzhet_vector2), digits=3)
+
+    print(x)
+    point <- 100*(1/(1+exp(-x+log((1-INITIALDEC)/INITIALDEC))))
+    gauge(round(point), min = 0, max = 100, symbol = '%', gaugeSectors(
+      success = c(80, 100), warning = c(40, 79), danger = c(0, 39)
+    ))
+})
+```
+
+### (Concrete) Next steps
+
+```{r}
+INITIALNEXT <- 0.3
+# logistic curve: 100*(1/(1+exp(-x+log((1-INITIAL)/INITIAL))))
+renderGauge({
+    n <- nexts()
+    id <- ideas()
+    x <- 2*(n-2) + # for explicit next steps
+          nrow(id)/10 + # for total ideas
+          nrow(id)/length(unique(id$person_id))
+    print(x)
+    point <- 100*(1/(1+exp(-x+log((1-INITIALNEXT)/INITIALNEXT))))
+    gauge(round(point), min = 0, max = 100, symbol = '%', gaugeSectors(
+      success = c(80, 100), warning = c(40, 79), danger = c(0, 39)
+    ))
+})
+```
+
+Row {data-height=550}
+-----------------------------------------------------------------------
+
+### Homework
+
+```{r}
+renderPlot({
+              data <- c(read=reads(), skim=skims(), now=nowork())
+              barplot(data)
+                })
+
+```
+
+
+### Participation vs. original material (words)
+
+```{r}
+renderPlot({
+              id <- ideas()
+              wrd <- c(original=wordsDoc, participation=sum(id$words))
+              barplot(wrd)
+                })
+
+```
+
+### (Explicit) Decision
+
+```{r}
+renderPlot({
+              dec <- decs()
+              barplot(table(dec))
+                })
+
+```
+
+
+### Ideas per person
+
+```{r}
+
+renderPlot({
+              id <- ideas()
+              barplot(table(id$person_id))
+                })
+
+```
+
+
+
+Row {data-height=550}
+-----------------------------------------------------------------------
+
+
+### Subjective with-me-ness
+
+```{r}
+
+renderPlot({
+  w <- wmn()
+  plot(density(w), 
+     main="", 
+     xlab="With-me-ness", 
+     col="black", 
+     xlim=c(0,10))
+  polygon(density(w), 
+     main="", 
+     xlab="With-me-ness", 
+     col="green",
+     xlim=c(0,10))
+  abline(v=mean(w),col="red")
+  })
+```
+
+
+### Equality (in number of ideas / in debate participation)
+
+```{r}
+
+renderValueBox({
+              id <- ideas()
+              part <- debpart()
+              t <- table(id$person_id)
+              ineq.id <- round(1-ineq(t, type="entropy"), digits=2)
+              ineq.deb <- round(1-ineq(part, type="entropy"), digits=2)
+              message <- paste(ineq.id,"/",ineq.deb)
+              valueBox(
+                value=message,
+                icon = "fa-balance-scale",
+                color="primary")
+                })
+
+```
+
+### Sentiment (post-its)
+
+```{r}
+renderValueBox({
+              id <- ideas() ## All the ideas together
+              postits <- paste(id$ideatext, collapse=" ")
+              poa_word_v <- get_tokens(postits, pattern = "\\W")
+              print(paste("postits:",poa_word_v))
+              syuzhet_vector <- get_sentiment(poa_word_v, method="syuzhet")
+              valueBox(
+                value=round(mean(syuzhet_vector), digits=3),
+                icon = "fa-bullseye",
+                color="primary")
+                })
+```
+
+### Next steps
+
+```{r}
+renderValueBox({
+              nexts <- nexts()
+              valueBox(
+                value=nexts,
+                icon = "fa-flash",
+                color="info")
+                })
+```
+
+
+Row
+-----------------------------------------------------------------------
+
+### Correct content answers
+
+
+```{r}
+
+
+renderValueBox({
+              debdata <- answers()
+              q1 <- round((nrow(debdata[debdata$q1==correct.ans['q1'],])/nrow(debdata))*100, digits=0)
+              q2 <- round((nrow(debdata[debdata$q2==correct.ans['q2'],])/nrow(debdata))*100, digits=0)
+              q3 <- round((nrow(debdata[debdata$q3==correct.ans['q3'],])/nrow(debdata))*100, digits=0)
+              print(paste())
+              message = paste(q1,"%/",q2,"%/",q3,"%", sep="")
+              valueBox(
+                value=message,
+                icon = "fa-flash",
+                color="success")
+                })
+```
+
+
+### People participated
+
+```{r}
+renderValueBox({
+              part <- participates()
+              message <- paste(sum(part=='Yes'),"/",length(part))
+              valueBox(
+                value=message,
+                icon = "fa-bullseye",
+                color="primary")
+                })
+```
+
+### Sentiment (reflection)
+
+```{r}
+renderValueBox({
+              ref <- reflectext() ## All the reflections together
+              poa_word_v <- get_tokens(ref, pattern = "\\W")
+              print(paste("reflections:",ref))
+              print(head(poa_word_v))
+              syuzhet_vector <- get_sentiment(poa_word_v, method="syuzhet")
+              valueBox(
+                value=round(mean(syuzhet_vector), digits=3),
+                icon = "fa-bullseye",
+                color="primary")
+                })
+```
+
+
+### Ideas
+
+```{r}
+
+renderValueBox({
+              id <- ideas()
+              valueBox(
+                value=nrow(id),
+                icon = "fa-lightbulb-o",
+                color="info")
+                })
+
+```
