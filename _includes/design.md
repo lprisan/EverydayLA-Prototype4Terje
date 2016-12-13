@@ -8,7 +8,7 @@ Planned time: 120 mins
 * Goals of the effort
 
 ### 2. Goals and dynamics of the session (Luis) **[5']**
-* Navigate to [this website](https://lprisan.github.io/EverydayLA-Prototype2)
+* Navigate to [this website](https://lprisan.github.io/EverydayLA-Prototype2) ([https://goo.gl/6Y6I5g](https://goo.gl/6Y6I5g))
 * Short feedback about workgroups' slides ---> **does it make sense this order (BEFORE the progress updates)?**
 * Example of data gathering: [Please answer a few quick questions (Q1)](https://docs.google.com/forms/d/e/1FAIpQLSeCzriGP9PNAlgkzFBdEjPXOe7ezpWgXqUIPv62NK76JZROgA/viewform)
 
