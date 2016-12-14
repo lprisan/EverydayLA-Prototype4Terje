@@ -218,12 +218,12 @@ renderGauge({
     }
     
     gr <- groups()
-    coef_wmn <- 0
+    #coef_wmn <- 0
     coef_und <- 0
     if(nrow(gr)>0){
-      wmn <- gr[,c("Attention.LivingLabs","Attention.STEM","Attention.InformalWP","Attention.Inclusive")]
-      meltwmn <- melt(wmn)
-      coef_wmn = mean(meltwmn$value)/10
+      #wmn <- gr[,c("Attention.LivingLabs","Attention.STEM","Attention.InformalWP","Attention.Inclusive")]
+      #meltwmn <- melt(wmn)
+      #coef_wmn = mean(meltwmn$value)/10
   
       und <- gr[,c("Understanding.LivingLabs","Understanding.STEM","Understanding.InformalWP","Understanding.Inclusive")]
       meltund <- melt(und)
@@ -231,7 +231,7 @@ renderGauge({
     }
     
 
-    x <- coef_hw + coef_wmn + coef_und
+    x <- coef_hw + coef_und #+ coef_wmn
     print(x)
     point <- 100*(1/(1+exp(-x+log((1-INITIALAWA)/INITIALAWA))))
     gauge(round(point), min = 0, max = 100, symbol = '%', gaugeSectors(
@@ -256,14 +256,14 @@ renderPlot({
 
 ```{r}
 
-renderPlot({
-              data <- groups()
-              if(nrow(data)>0){
-                data.wmn <- data[,c("Attention.LivingLabs","Attention.STEM","Attention.InformalWP","Attention.Inclusive")]
-                melted <- melt(data.wmn)
-                ggplot(melted, aes(x=value, fill=variable))+geom_density(alpha=0.2)+theme_bw()+xlim(1,10)
-              }
-                })
+# renderPlot({
+#               data <- groups()
+#               if(nrow(data)>0){
+#                 data.wmn <- data[,c("Attention.LivingLabs","Attention.STEM","Attention.InformalWP","Attention.Inclusive")]
+#                 melted <- melt(data.wmn)
+#                 ggplot(melted, aes(x=value, fill=variable))+geom_density(alpha=0.2)+theme_bw()+xlim(1,10)
+#               }
+#                 })
 
 ```
 
