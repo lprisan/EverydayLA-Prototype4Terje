@@ -25,7 +25,7 @@ Planned time: 120 mins
 * Name a "Scribe" and a "Pitcher" per group
 
 ### 5. Breakout Fishbowl I: Defining the project **[30+5']**
-* Define the Need (context+problem), Approach (educational+technological), Nature of the project ---> **e.g., using a poster structure like this??**
+* Define the Need (context+problem), Approach (educational+technological), Nature of the project ---> e.g., using a [poster structure like this](https://drive.google.com/open?id=0B7gVrLYnXJx0LWhQMUxfN1JETzg)
 * Go to whichever group interests you most (or makes you curious). You can change groups whenever you want
 * Peripheral participants help through "group inbox"
     * [Living Labs for educational innovation's Inbox (Q5a)](https://docs.google.com/forms/d/e/1FAIpQLSfus7cjCXZuObregKwLzhZpywubQfYRF_7Yn8Ie7XQV_TMEPw/viewform)
