@@ -258,9 +258,11 @@ renderPlot({
 
 renderPlot({
               data <- groups()
-              data.wmn <- data[,c("Attention.LivingLabs","Attention.STEM","Attention.InformalWP","Attention.Inclusive")]
-              melted <- melt(data.wmn)
-              ggplot(melted, aes(x=value, fill=variable))+geom_density(alpha=0.2)+theme_bw()+xlim(1,10)
+              if(nrow(data)>0){
+                data.wmn <- data[,c("Attention.LivingLabs","Attention.STEM","Attention.InformalWP","Attention.Inclusive")]
+                melted <- melt(data.wmn)
+                ggplot(melted, aes(x=value, fill=variable))+geom_density(alpha=0.2)+theme_bw()+xlim(1,10)
+              }
                 })
 
 ```
@@ -271,9 +273,12 @@ renderPlot({
 
 renderPlot({
               data <- groups()
-              data.wmn <- data[,c("Understanding.LivingLabs","Understanding.STEM","Understanding.InformalWP","Understanding.Inclusive")]
-              melted <- melt(data.wmn)
-              ggplot(melted, aes(x=value, fill=variable))+geom_density(alpha=0.2)+theme_bw()+xlim(1,10)
+              if(nrow(data)>0){
+                data.wmn <- data[,c("Understanding.LivingLabs","Understanding.STEM","Understanding.InformalWP","Understanding.Inclusive")]
+                melted <- melt(data.wmn)
+                ggplot(melted, aes(x=value, fill=variable))+geom_density(alpha=0.2)+theme_bw()+xlim(1,10)                
+              }
+
                 })
 
 ```
@@ -329,13 +334,17 @@ renderGauge({
 ```{r}
 renderPlot({
               data <- feedback()
-              data2 <- data[,c("Apply.Teaching","Apply.Research")]
-              data2$Apply.Teaching <- convertFactor(data2$Apply.Teaching)
-              data2$Apply.Research <- convertFactor(data2$Apply.Research)
-              print(data2)
-              melted <- melt(data2)
-              print(melted)
-              ggplot(melted, aes(y=value, x=variable, fill=variable))+geom_boxplot(alpha=0.2)+theme_bw()+ylim(1,5)+coord_flip()
+              if(nrow(data)>0){
+                data2 <- data[,c("Apply.Teaching","Apply.Research")]
+                data2$Apply.Teaching <- convertFactor(data2$Apply.Teaching)
+                data2$Apply.Research <- convertFactor(data2$Apply.Research)
+                print(data2)
+                melted <- melt(data2)
+                print(melted)
+                ggplot(melted, aes(y=value, x=variable, fill=variable))+geom_boxplot(alpha=0.2)+theme_bw()+ylim(1,5)+coord_flip()
+                
+              }
+              
                 })
 ```
 
@@ -346,15 +355,18 @@ renderPlot({
 
 # Alternative: word cloud
 renderPlot({
-data <- feedback()
-print(data$LA.Definition)
-corpus <- Corpus(VectorSource(data$LA.Definition))
-corpus <- tm_map(corpus, removePunctuation)
-corpus <- tm_map(corpus, tolower)
-corpus <- tm_map(corpus, removeWords, stopwords("english"))
-corpus <- tm_map(corpus, stemDocument)
-corpus <- tm_map(corpus, PlainTextDocument)
-wordcloud(corpus, max.words=100, random.order=F)
+  data <- feedback()
+  if(nrow(data)>0){
+    print(data$LA.Definition)
+    corpus <- Corpus(VectorSource(data$LA.Definition))
+    corpus <- tm_map(corpus, removePunctuation)
+    corpus <- tm_map(corpus, tolower)
+    corpus <- tm_map(corpus, removeWords, stopwords("english"))
+    corpus <- tm_map(corpus, stemDocument)
+    corpus <- tm_map(corpus, PlainTextDocument)
+    wordcloud(corpus, max.words=100, random.order=F)
+    
+  }
 })
 ```
 
@@ -366,10 +378,14 @@ wordcloud(corpus, max.words=100, random.order=F)
 # Raw definitions
  renderText({
                data <- feedback()
-               defs <- data$LA.Definition
-               defs <- defs[nchar(defs)>2]
-               textdefs <- paste(defs, collapse = " || ")
-               textdefs
+               if(nrow(data)>0){
+                 defs <- data$LA.Definition
+                 defs <- defs[nchar(defs)>2]
+                 textdefs <- paste(defs, collapse = " || ")
+                 textdefs
+                 
+               }
+               
  })
 
 ```
@@ -520,15 +536,17 @@ renderPlot({
 
 renderValueBox({
               data <- feedback()
-              fb <- paste(data$Comments, collapse=" ")
-              poa_word_v <- get_tokens(fb, pattern = "\\W")
-              print(paste("feedback:",poa_word_v))
-              syuzhet_vector <- get_sentiment(poa_word_v, method="syuzhet")
-              valueBox(
-                value=round(mean(syuzhet_vector), digits=3),
-                icon = "fa-smile-o",
-                color="primary")
-                })
+              if(nrow(data)>0){
+                fb <- paste(data$Comments, collapse=" ")
+                poa_word_v <- get_tokens(fb, pattern = "\\W")
+                print(paste("feedback:",poa_word_v))
+                syuzhet_vector <- get_sentiment(poa_word_v, method="syuzhet")
+                valueBox(
+                  value=round(mean(syuzhet_vector), digits=3),
+                  icon = "fa-smile-o",
+                  color="primary")
+              }
+            })
 
 
 
