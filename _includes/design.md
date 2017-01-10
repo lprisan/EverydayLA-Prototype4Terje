@@ -4,7 +4,7 @@ Planned time: 90-120 mins
 
 
 ### 1. Intro to the session goals and structure **[5']**
-* Everybody should navigate to this website, [https://goo.gl/5352tf](https://goo.gl/5352tf){:target="_blank"}
+* Everybody should navigate to this website, at [goo.gl/5352tf](https://goo.gl/5352tf){:target="_blank"}{:style="{text-size:300%}"}
 * ![... or scan this!](assets/qr.png){:height="450px"}
 
 ### 2. Student presentation rounds **[20' each]**
