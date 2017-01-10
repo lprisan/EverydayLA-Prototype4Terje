@@ -5,7 +5,7 @@ Planned time: 90-120 mins
 
 ### 1. Intro to the session goals and structure **[5']**
 * Everybody should navigate to this website, [https://goo.gl/5352tf](https://goo.gl/5352tf){:target="_blank"}
-* ![... or scan this!](assets/qr.png)
+* ![... or scan this!](assets/qr.png){:height="450px"}
 
 ### 2. Student presentation rounds **[20' each]**
 * Student presents main ideas of their dissertation (less than 15 mins)
