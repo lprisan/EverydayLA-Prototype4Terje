@@ -1,60 +1,27 @@
 ## Plan/Activities
 
-Planned time: 120 mins
+Planned time: 90-120 mins
 
 
-### 1. Previously, on CEEI research seminars... (Tobias) **[10']**
-* Motivation
-* Goals of the effort
+### 1. Intro to the session goals and structure **[5']**
+* Everybody should navigate to this website, [https://goo.gl/5352tf](https://goo.gl/5352tf){:target="_blank"}
+* ![... or scan this!](assets/qr.png)
 
-### 2. Goals and dynamics of the session (Luis) **[5']**
-* Navigate to [this website](https://lprisan.github.io/EverydayLA-Prototype2) ([https://goo.gl/6Y6I5g](https://goo.gl/6Y6I5g))
-* Short feedback about workgroups' slides
-* Example of data gathering: [Please answer a few quick questions (Q1)](https://docs.google.com/forms/d/e/1FAIpQLSeCzriGP9PNAlgkzFBdEjPXOe7ezpWgXqUIPv62NK76JZROgA/viewform)
+### 2. Student presentation rounds **[20' each]**
+* Student presents main ideas of their dissertation (less than 15 mins)
+* After the presentation, **presenting student** answers [this form](https://docs.google.com/forms/d/e/1FAIpQLScF7L6UAloAZq8RuowmxDc8ZKPw8MdKAnTUrXhYNJnwQ8MhLA/viewform){:target="_blank"}
+* After the presentation, **audience** answers [this other form](https://docs.google.com/forms/d/e/1FAIpQLSdB-CaII5luEVMCWvp9A572xy4-603r5EMyW3l8_zPE7wtMBw/viewform){:target="_blank"}
+* Finally, the student goes to [his/her dashboard](){:target="_blank"}, looks at the questions available, and picks the most important ones. Meanwhile, the next student sets up for presenting.
 
-### 3. Short workgroup progress updates **[15']**
-* Write down in a piece of paper: attention (1-10), understanding (1-10), implication (core/in the loop/sporadic updates)
-* Living Labs for Educational Innovation (Katrin Poom-Valickis, Adolfo Ruiz)
-* STEM education outside the classroom (Terje Väljataga, Mihkel Kangur)
-* Informal & Workplace Learning (Larissa Jõgi, Tobias Ley)
-* New Group: Inclusive Education (Anneli Veispak)
-* [Please answer a few quick questions about the presentations and your interests (Q2)](https://docs.google.com/forms/d/e/1FAIpQLSfFBXJ_Hi1i6lmRjRVSanl1O7Teuven7mpy59qTyMCbJdDKZQ/viewform)
+### 3. Breakout groups **[25']**
+* Audience breaks out into small groups around each of the presenting students
+* As many iterations as possible of:
+    1. The student picks up an important question from [his/her dashboard](){:target="_blank"} (own or posed by audience), and poses it to the small group
+    2. The small group responds or gives any other input. The student takes notes of the responses/ideas/conclusions, and next actions in [this form](https://docs.google.com/forms/d/e/1FAIpQLSfOiyrAIcaqDm1N94DPmqZLvMIfTSshyje0i05TFO1aAdX1Yw/viewform){:target="_blank"}
+    3. When there are no more ideas, or the student feels another question should be posed, go back to 1.
 
-### 4. Intro to groupwork (Luis) **[5']**
-* NABC pitch structure for innovations + work on 1st steps
-* Name a "Scribe" and a "Pitcher" per group
-
-### 5. Breakout Fishbowl I: Defining the project **[30+5']**
-* Define the Need (context+problem), Approach (educational+technological), Nature of the project ---> e.g., using a [poster structure like this](https://drive.google.com/open?id=0B7gVrLYnXJx0LWhQMUxfN1JETzg)
-* Go to whichever group interests you most (or makes you curious). You can change groups whenever you want
-* Peripheral participants help through "group inbox"
-    * [Living Labs for educational innovation's Inbox (Q5a)](https://docs.google.com/forms/d/e/1FAIpQLSfus7cjCXZuObregKwLzhZpywubQfYRF_7Yn8Ie7XQV_TMEPw/viewform)
-    * [STEM education outside the classroom's Inbox (Q5b)](https://docs.google.com/forms/d/e/1FAIpQLSezQSR8vQd0iRjnU7_NwVYuwDe_VgiYT8nl6FclqH4Vz0kW5g/viewform)
-    * [Informal & Workplace learning's Inbox (Q5c)](https://docs.google.com/forms/d/e/1FAIpQLScUDAPTqxvdUWbr1icVthRg-3LUKKiQdFgS_9fRXO6jwuiA_A/viewform)
-    * [Inclusive education's Inbox (Q5d)](https://docs.google.com/forms/d/e/1FAIpQLSd4g990K5ZcvGNKGDZomt7mxosxTI3hIXBi-QFmZrPMsj3APw/viewform)
-* At the end:
-    * Scribes input the group's ideas [in this form (Q4)](https://docs.google.com/forms/d/e/1FAIpQLSd3cAgnwqVJ8-D7hCkzNfh5WQ45KAMUF6bNoFhMooUlmhrW7w/viewform)
-    * The rest [answer a few questions about the groupwork (Q3)](https://docs.google.com/forms/d/e/1FAIpQLSfAd7dk8OXV3fmmKs2HqMN5dRCuzLokkRIUI6iW9P3FpDtl7Q/viewform)
-
-### 6. Breakout Fishbowl II: Towards a pitch and next steps **[15+5']**
-* Define the Benefits, Competition, and first milestone/steps
-* You may change groups, if you like, or stay with the same
-* Peripheral participants help through "group inbox"
-    * [Living Labs for educational innovation's Inbox (Q5a)](https://docs.google.com/forms/d/e/1FAIpQLSfus7cjCXZuObregKwLzhZpywubQfYRF_7Yn8Ie7XQV_TMEPw/viewform)
-    * [STEM education outside the classroom's Inbox (Q5b)](https://docs.google.com/forms/d/e/1FAIpQLSezQSR8vQd0iRjnU7_NwVYuwDe_VgiYT8nl6FclqH4Vz0kW5g/viewform)
-    * [Informal & Workplace learning's Inbox (Q5c)](https://docs.google.com/forms/d/e/1FAIpQLScUDAPTqxvdUWbr1icVthRg-3LUKKiQdFgS_9fRXO6jwuiA_A/viewform)
-    * [Inclusive education's Inbox (Q5d)](https://docs.google.com/forms/d/e/1FAIpQLSd4g990K5ZcvGNKGDZomt7mxosxTI3hIXBi-QFmZrPMsj3APw/viewform)
-* At the end:
-    * Scribes input the group's ideas [in this form (Q6)](https://docs.google.com/forms/d/e/1FAIpQLSdSde7MvCtNsX4KF0edFZ5tOp4LlJqM0SuqA29iZyVnFUFS9A/viewform)
-    * The rest [answer a few questions about the groupwork (Q3)](https://docs.google.com/forms/d/e/1FAIpQLSfAd7dk8OXV3fmmKs2HqMN5dRCuzLokkRIUI6iW9P3FpDtl7Q/viewform)
-
-### 7. Groups present their pitches **[4x5']**
-* Audience provides further feedback using the "group's inboxes":
-    * [Living Labs for educational innovation's Inbox (Q5a)](https://docs.google.com/forms/d/e/1FAIpQLSfus7cjCXZuObregKwLzhZpywubQfYRF_7Yn8Ie7XQV_TMEPw/viewform)
-    * [STEM education outside the classroom's Inbox (Q5b)](https://docs.google.com/forms/d/e/1FAIpQLSezQSR8vQd0iRjnU7_NwVYuwDe_VgiYT8nl6FclqH4Vz0kW5g/viewform)
-    * [Informal & Workplace learning's Inbox (Q5c)](https://docs.google.com/forms/d/e/1FAIpQLScUDAPTqxvdUWbr1icVthRg-3LUKKiQdFgS_9fRXO6jwuiA_A/viewform)
-    * [Inclusive education's Inbox (Q5d)](https://docs.google.com/forms/d/e/1FAIpQLSd4g990K5ZcvGNKGDZomt7mxosxTI3hIXBi-QFmZrPMsj3APw/viewform)
-
-### 8. Reflection about learning Analytics **[5+5']**
-* At the end, [please answer a few last questions about your experience (Q7)](https://docs.google.com/forms/d/e/1FAIpQLScqS_c9vxLOyztgbPGiRtVhRRnz1R82TttuzWbm1CHA1OGlUg/viewform)
-* **Next seminar: date? topics?**
+### 4. Wrap-up **[10']**
+* The session chair opens up [this form](https://docs.google.com/forms/d/e/1FAIpQLScn6q28mRCEvfI22xU_dxudZwwsjmsNb03IC1sXNE-RZxj8Sg/viewform){:target="_blank"}, to take notes of the session conclusions
+* Each presenting student summarizes in **1 minute** the most interesting thing they've learned in the session
+* The floor is opened to the audience to note (briefly!) other interesting lessons learned in the session
+* The session chair opens up the [session dashboard](){:target="_blank"}, and shows it to the participants
