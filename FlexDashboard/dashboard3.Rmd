@@ -144,10 +144,10 @@ sessions <- read.csv(file = "Sessions.csv", encoding="UTF-8", stringsAsFactors=F
 Overall
 =====================================  
     
-Column 1
+Column 1 {data-width=600}
 -------------------------------------
 
-### Sessions recorded
+### Sessions recorded and wrapped up
 
 ```{r}
 
@@ -164,30 +164,194 @@ renderValueBox({
 
 ### Student / Audience open questions
 
+
+```{r}
+#TODO: Filter out empty/semi-empty open questions and lessons!
+
+renderValueBox({
+  
+   data <- presenterD()
+ studentQ1 <- data[,"MainQ"]
+ studentQ2 <- data[,"OtherQ"]
+ if(length(studentQ1)>0 & length(studentQ2)>0){
+  qs1 <- unlist(string.break.line(paste(studentQ1,studentQ2,sep="\n")))
+ }else if(length(studentQ1)>0){
+  qs1 <- unlist(string.break.line(studentQ1))
+ }else if(length(studentQ2)>0){
+  qs1 <- unlist(string.break.line(studentQ2))
+ }else{
+   qs1 <- character(0)
+ }
+
+  data <- audienceD()
+ audienceQ1 <- data[,"MainQ"]
+ audienceQ2 <- data[,"OtherQ"]
+ if(length(audienceQ1)>0 & length(audienceQ2)>0){
+  qs2 <- unlist(string.break.line(paste(audienceQ1,audienceQ2,sep="\n")))
+ }else if(length(audienceQ1)>0){
+  qs2 <- unlist(string.break.line(audienceQ1))
+ }else if(length(audienceQ2)>0){
+  qs2 <- unlist(string.break.line(audienceQ2))
+ }else{
+   qs2 <- character(0)
+ }
+
+  message=paste(length(qs1), "/", length(qs2))
+  
+              valueBox(
+                value=message,
+                icon = "fa-question",
+                color="warning")
+                })
+
+```   
+
 ### Audience comprehension
+
+
+
+```{r}
+
+renderPlot({
+  aud <- audienceD()
+  d <- aud
+  if(nrow(d)>0){
+    ggplot(d, aes(x=Understanding))+geom_density(alpha=0.2, fill="green")+theme_bw()+xlim(0,10)+geom_vline(xintercept = mean(d$Understanding))
+  }
+})
+```
 
 ### Questions discussed / Pieces of feedback
 
+```{r}
+
+renderValueBox({
+              fb <- feedbackD()
+              d <- fb
+              f <- unlist(string.break.line(paste(fb$Feedback,sep="\n")))
+              message <- paste(nrow(d),"/",length(f))
+              valueBox(
+                value=message,
+                icon = "fa-comments",
+                color="danger")
+                })
+```
+
+
 ### Student satisfaction about the feedback
+
+
+```{r}
+
+renderPlot({
+  fb <- feedbackD()
+  d <- fb
+  if(nrow(d)>0){
+    ggplot(d, aes(x=Satisfaction))+geom_density(alpha=0.2, fill="red")+theme_bw()+xlim(0,10)+geom_vline(xintercept = mean(d$Satisfaction))
+  }
+})
+```
 
 ### Lessons learned by students / by audience
 
+```{r}
 
-Column 2
+renderValueBox({
+   data <- wrapD()
+   d <- data[,]
+   les.stu <- paste(d$Lessons.Students,sep="\n")
+   les.aud <- paste(d$Lessons.Audience,sep="\n")
+   n_les.stu <- 0
+   n_les.aud <- 0
+   if(length(les.stu)>0){
+    n_les.stu <- length(unlist(string.break.line(les.stu)))
+   }
+   if(length(les.aud)>0){
+    n_les.aud <- length(unlist(string.break.line(les.aud)))
+   }
+   message <- paste(n_les.stu,"/",n_les.aud)
+  valueBox(value=message,
+                icon = "fa-graduation-cap",
+                color="info")
+
+})
+
+```
+
+
+
+Column 3 {data-width=1600}
 -------------------------------------
 
-(social network) ... out of `r nrow(sessions)`
+### Open questions word cloud
+
+```{r}
+
+renderPlot({
+  pr <- presenterD()
+  au <- audienceD()
+  
+  d <- character(0)
+  if(nrow(pr)>0){
+    d <- c(d,pr$MainQ,pr$OtherQ)
+  }
+  if(nrow(au)>0){
+    d <- c(d,au$MainQ,au$OtherQ)
+  }
+  
+  d <- unlist(string.break.line(paste(d,sep="\n")))
+  
+  if(length(d)>0){
+    corpus <- Corpus(VectorSource(d))
+    corpus <- tm_map(corpus, removePunctuation)
+    corpus <- tm_map(corpus, tolower)
+    corpus <- tm_map(corpus, removeWords, stopwords("english"))
+    corpus <- tm_map(corpus, stemDocument)
+    corpus <- tm_map(corpus, PlainTextDocument)
+    wordcloud(corpus, max.words=100, random.order=F)
+  }
+})
+```
 
 
-### Social network
 
-Column 3
--------------------------------------
+### Feedback word cloud
 
-(semantics and concepts)
+```{r}
 
+renderPlot({
+  fb <- feedbackD()
+  d <- fb
+  if(nrow(d)>0){
+    corpus <- Corpus(VectorSource(d$Feedback))
+    corpus <- tm_map(corpus, removePunctuation)
+    corpus <- tm_map(corpus, tolower)
+    corpus <- tm_map(corpus, removeWords, stopwords("english"))
+    corpus <- tm_map(corpus, stemDocument)
+    corpus <- tm_map(corpus, PlainTextDocument)
+    wordcloud(corpus, max.words=100, random.order=F)
+  }
+})
+```
 
+### Lessons word cloud
 
+```{r}
+
+renderPlot({
+  wr <- wrapD()
+  d <- c(wr$Lessons.Students,wr$Lessons.Audience)
+  if(length(d)>0){
+    corpus <- Corpus(VectorSource(d))
+    corpus <- tm_map(corpus, removePunctuation)
+    corpus <- tm_map(corpus, tolower)
+    corpus <- tm_map(corpus, removeWords, stopwords("english"))
+    corpus <- tm_map(corpus, stemDocument)
+    corpus <- tm_map(corpus, PlainTextDocument)
+    wordcloud(corpus, max.words=100, random.order=F)
+  }
+})
+```
 
 
 Session
@@ -241,7 +405,7 @@ renderValueBox({
 ```
 
 
-### Total words / lines of feedback 
+### Session words / lines of feedback 
 
 ```{r}
 
@@ -249,7 +413,7 @@ renderValueBox({
               sessionstu <- sessions[sessions$Chair.Name == input$chair,"Student.Name"]
               fb <- feedbackD()
               d <- fb[fb$Name %in% sessionstu,]
-              message=""
+              message="0 / 0"
               if(nrow(d)>0){
                 totalfb <- paste(d$Feedback, sep = "\n")
                 lines <- unlist(string.break.line(totalfb))
@@ -266,7 +430,7 @@ renderValueBox({
 
 
 
-### Total feedback word cloud
+### Session feedback word cloud
 
 ```{r}
 
@@ -290,6 +454,23 @@ renderPlot({
 Column 2
 -------------------------------------
 
+### Audience comprehension of presentations
+
+
+```{r}
+
+renderPlot({
+  sessionstu <- sessions[sessions$Chair.Name == input$chair,"Student.Name"]
+  aud <- audienceD()
+  d <- aud[aud$Name %in% sessionstu,]
+  if(nrow(d)>0){
+    ggplot(d, aes(x=Understanding))+geom_density(alpha=0.2, fill="green")+theme_bw()+xlim(0,10)+geom_vline(xintercept = mean(d$Understanding))
+  }
+})
+```
+
+
+
 ### Student satisfaction with feedback
 
 
@@ -299,7 +480,9 @@ renderPlot({
   sessionstu <- sessions[sessions$Chair.Name == input$chair,"Student.Name"]
   fb <- feedbackD()
   d <- fb[fb$Name %in% sessionstu,]
-  ggplot(d, aes(x=Satisfaction, fill="red"))+geom_density(alpha=0.2)+theme_bw()+xlim(0,10)+geom_vline(xintercept = mean(d$Satisfaction))
+  if(nrow(d)>0){
+    ggplot(d, aes(x=Satisfaction))+geom_density(alpha=0.2, fill="red")+theme_bw()+xlim(0,10)+geom_vline(xintercept = mean(d$Satisfaction))
+  }
 })
 ```
 
@@ -314,9 +497,9 @@ library(Hmisc)
 
 renderTable({
  data <- wrapD()
+ print(data)
+ print(input$chair)
  d <- data[data$Chair.Name==input$chair,]
- 
-# Lessons.Students
  les.stu <- d$Lessons.Students
  les.aud <- d$Lessons.Audience
  if(length(les.stu)>0 & length(les.aud)>0){
@@ -359,7 +542,7 @@ Column 1
 renderPlot({
   data <- audienceD()
   d <- data[data$Name==input$student,]
-  ggplot(d, aes(x=Understanding, fill="red"))+geom_density(alpha=0.2)+theme_bw()+xlim(0,10)+geom_vline(xintercept = mean(d$Understanding))
+  ggplot(d, aes(x=Understanding))+geom_density(alpha=0.2, fill="green")+theme_bw()+xlim(0,10)+geom_vline(xintercept = mean(d$Understanding))
 })
 ```
 
@@ -442,14 +625,18 @@ renderValueBox({
 renderValueBox({
               data <- feedbackD()
               d <- data[data$Name==input$student,]
-              totalfb <- paste(d$Feedback, sep = "\n")
-              lines <- unlist(string.break.line(totalfb))
-              wc <- sum(sapply(totalfb,FUN = count_words))
-              message <- paste(length(lines),"/",wc)
+              message="0 / 0"
+              if(nrow(d)>0){
+                totalfb <- paste(d$Feedback, sep = "\n")
+                lines <- unlist(string.break.line(totalfb))
+                wc <- sum(sapply(totalfb,FUN = count_words))
+                message <- paste(length(lines),"/",wc)
+                
+              }
               valueBox(
-                value=message,
-                icon = "fa-pencil",
-                color="success")
+                  value=message,
+                  icon = "fa-pencil",
+                  color="success")
                 })
 ```
 
@@ -478,11 +665,54 @@ renderPlot({
 
 
 ```{r}
+# TODO: remove this graph??
 
 renderPlot({
   data <- feedbackD()
   d <- data[data$Name==input$student,]
-  ggplot(d, aes(x=Satisfaction, fill="red"))+geom_density(alpha=0.2)+theme_bw()+xlim(0,10)+geom_vline(xintercept = mean(d$Satisfaction))
+  ggplot(d, aes(x=Satisfaction))+geom_density(alpha=0.2, fill="red")+theme_bw()+xlim(0,10)+geom_vline(xintercept = mean(d$Satisfaction))
 })
 ```
 
+Column 3
+-------------------------------------
+
+
+```{r}
+
+# TODO: FIX THIS!!
+  data <- feedbackD()
+
+question <- data$Question
+
+selectInput("question", label = "Please select the discussed question:",
+            choices = question, selected = question[1])
+```
+
+
+
+### Feedback
+
+```{r}
+# TODO: Change this to show actual feedback!
+library(Hmisc)
+
+renderTable({
+ data <- presenterD()
+ studentQ1 <- data[data$Name == input$student,"MainQ"]
+ studentQ2 <- data[data$Name == input$student,"OtherQ"]
+ if(length(studentQ1)>0 & length(studentQ2)>0){
+  qs <- unlist(string.break.line(paste(studentQ1,studentQ2,sep="\n")))
+ }else if(length(studentQ1)>0){
+  qs <- unlist(string.break.line(studentQ1))
+ }else if(length(studentQ2)>0){
+  qs <- unlist(string.break.line(studentQ2))
+ }else{
+   qs <- c("")
+ }
+ data.frame(Question=qs)
+ 
+})
+
+
+```
