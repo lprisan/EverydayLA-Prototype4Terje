@@ -1,0 +1,488 @@
+---
+title: "Everyday LA: Vihula W.S. (13.01.2017)"
+output: 
+  flexdashboard::flex_dashboard
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(gsheet)
+suppressMessages(library(dplyr))
+library(data.table)
+library(rvest)
+library(ggplot2)
+library(ineq)
+library(syuzhet)
+library(tm)
+library(wordcloud)
+library(SnowballC)
+library(stringi)
+library(stringr)
+
+URL_Q_Presenter <- 'https://docs.google.com/spreadsheets/d/1cEz64I2_YmwwZfVevH2kpqXwUPi79LzV43nK374jE0A/edit?usp=sharing'
+URL_Q_Audience <- 'https://docs.google.com/spreadsheets/d/1hQTcSdw7r04GOyn4RyZFA-yGaU0mkoVF4_-GkdBcKf0/edit?usp=sharing'
+URL_Q_Feedback <- 'https://docs.google.com/spreadsheets/d/1QQ8k8fjLTDxXv7OJ9MaJC2dPVnbss2MAYki1k8rV3YE/edit?usp=sharing'
+URL_Q_Wrap <- 'https://docs.google.com/spreadsheets/d/1K3YTYAyZ1RinpxM4wrQXmlbXvwVrKrp5Yn7nS_XlImE/edit?usp=sharing'
+
+
+# Define the data gathering function here? possibly using
+# http://shiny.rstudio.com/reference/shiny/latest/reactivePoll.html
+# http://shiny.rstudio.com/gallery/reactive-poll-and-file-reader.html
+
+pollSpreadsheet <- function(url, namesCol=NULL, factors=NULL){
+  data <- reactivePoll(5000, session,
+                     readLastTimestamp <- function(){
+                        # We read the latest response timestamp
+                        data <- as.data.frame(gsheet2tbl(url))
+                        if(nrow(data)>0 & ncol(data)>1){
+                          data[nrow(data),1]
+                        }else{
+                          ""
+                        }
+                      },
+                     readValue <- function(){
+                        data <- as.data.frame(gsheet2tbl(url))
+                        #We clean it up a bit
+                        if(!is.null(namesCol) & length(namesCol)>0){
+                          names(data) <- namesCol 
+                        }
+                        if(!is.null(factors) & length(factors)>0){
+                          for(f in factors){
+                            data[,f] <- as.factor(data[,f])
+                          }  
+                        }
+                        data
+                      })
+  data
+}
+
+
+presenterData <- pollSpreadsheet(URL_Q_Presenter, 
+                          c("Timestamp","Name","MainQ","OtherQ"),
+                          c("Name"))
+
+presenterD <- reactive({
+  data <- presenterData()
+  data
+})
+
+
+audienceData <- pollSpreadsheet(URL_Q_Audience, 
+                          c("Timestamp","Name","Understanding","MainQ","OtherQ","Audience.Name"),
+                          c("Name"))
+
+audienceD <- reactive({
+  data <- audienceData()
+  data
+})
+
+
+feedbackData <- pollSpreadsheet(URL_Q_Feedback, 
+                          c("Timestamp","Name","Question","Feedback","Satisfaction"),
+                          c("Name"))
+
+feedbackD <- reactive({
+  data <- feedbackData()
+  data
+})
+
+wrapData <- pollSpreadsheet(URL_Q_Wrap, 
+                          c("Timestamp","Chair.Name","Lessons.Students","Lessons.Audience"),
+                          c("Chair.Name"))
+
+wrapD <- reactive({
+  data <- wrapData()
+  data
+})
+
+
+
+
+
+convertFactor <- function(values){
+  print(values)
+  if(!is.null(values) & length(values)>0){
+    newvals = numeric()
+    for(val in values){
+      if(grepl(as.character(val),"Strongly agree",fixed = T)){
+        newval = 5
+      }else if(grepl(as.character(val),"Agree",fixed = T)){
+        newval = 4
+      }else if(grepl(as.character(val),"Neither agree nor disagree",fixed = T)){
+        newval = 3
+      }else if(grepl(as.character(val),"Disagree",fixed = T)){
+        newval = 2
+      }else if(grepl(as.character(val),"Strongly disagree",fixed = T)){
+        newval = 1
+      }else if(grepl(as.character(val),"Not Applicable",fixed = T)){
+        newval = NA
+      }
+      newvals <- c(newvals, newval)
+    }
+    print(newvals)
+    newvals
+  }else{
+    values
+  }
+}
+
+
+
+      count_words <- function(s){
+        #count <- as.numeric(stri_stats_latex(s)['Words'])
+        count <- vapply(strsplit(s, "\\W+"), length, integer(1))
+        count
+      }
+
+
+sessions <- read.csv(file = "Sessions.csv", encoding="UTF-8", stringsAsFactors=FALSE)
+
+```
+
+
+Overall
+=====================================  
+    
+Column 1
+-------------------------------------
+
+### Sessions recorded
+
+```{r}
+
+renderValueBox({
+              data <- wrapD()
+              sessions <- unique(data$Chair.Name)
+              valueBox(
+                value=length(sessions),
+                icon = "fa-microphone",
+                color="primary")
+                })
+
+```   
+
+### Student / Audience open questions
+
+### Audience comprehension
+
+### Questions discussed / Pieces of feedback
+
+### Student satisfaction about the feedback
+
+### Lessons learned by students / by audience
+
+
+Column 2
+-------------------------------------
+
+(social network) ... out of `r nrow(sessions)`
+
+
+### Social network
+
+Column 3
+-------------------------------------
+
+(semantics and concepts)
+
+
+
+
+
+Session
+=====================================
+
+
+
+```{r}
+
+chairs <- sort(unique(sessions$Chair.Name))
+
+selectInput("chair", label = "Please select the session chair's name:",
+            choices = chairs, selected = chairs[1])
+```
+
+
+
+
+Column 1
+-------------------------------------
+
+### Students presented
+
+```{r}
+
+renderValueBox({
+              sessionstu <- sessions[sessions$Chair.Name == input$chair,"Student.Name"]
+              aud <- audienceD()
+              pres <- presenterD()
+              d <- pres[pres$Name %in% sessionstu,]
+              valueBox(
+                value=nrow(d),
+                icon = "fa-user",
+                color="primary")
+                })
+```
+
+### Open questions discussed 
+
+```{r}
+
+renderValueBox({
+              sessionstu <- sessions[sessions$Chair.Name == input$chair,"Student.Name"]
+              fb <- feedbackD()
+              d <- fb[fb$Name %in% sessionstu,]
+              valueBox(
+                value=nrow(d),
+                icon = "fa-question",
+                color="warning")
+                })
+```
+
+
+### Total words / lines of feedback 
+
+```{r}
+
+renderValueBox({
+              sessionstu <- sessions[sessions$Chair.Name == input$chair,"Student.Name"]
+              fb <- feedbackD()
+              d <- fb[fb$Name %in% sessionstu,]
+              message=""
+              if(nrow(d)>0){
+                totalfb <- paste(d$Feedback, sep = "\n")
+                lines <- unlist(string.break.line(totalfb))
+                wc <- sum(sapply(totalfb,FUN = count_words))
+                message <- paste(length(lines),"/",wc)
+                  
+              }
+              valueBox(
+                  value=message,
+                  icon = "fa-pencil",
+                  color="success")
+                })
+```
+
+
+
+### Total feedback word cloud
+
+```{r}
+
+renderPlot({
+  sessionstu <- sessions[sessions$Chair.Name == input$chair,"Student.Name"]
+  fb <- feedbackD()
+  d <- fb[fb$Name %in% sessionstu,]
+  if(nrow(d)>0){
+    corpus <- Corpus(VectorSource(d$Feedback))
+    corpus <- tm_map(corpus, removePunctuation)
+    corpus <- tm_map(corpus, tolower)
+    corpus <- tm_map(corpus, removeWords, stopwords("english"))
+    corpus <- tm_map(corpus, stemDocument)
+    corpus <- tm_map(corpus, PlainTextDocument)
+    wordcloud(corpus, max.words=100, random.order=F)
+  }
+})
+```
+
+
+Column 2
+-------------------------------------
+
+### Student satisfaction with feedback
+
+
+```{r}
+
+renderPlot({
+  sessionstu <- sessions[sessions$Chair.Name == input$chair,"Student.Name"]
+  fb <- feedbackD()
+  d <- fb[fb$Name %in% sessionstu,]
+  ggplot(d, aes(x=Satisfaction, fill="red"))+geom_density(alpha=0.2)+theme_bw()+xlim(0,10)+geom_vline(xintercept = mean(d$Satisfaction))
+})
+```
+
+Column 3
+-------------------------------------
+
+### Lessons learned
+
+```{r}
+
+library(Hmisc)
+
+renderTable({
+ data <- wrapD()
+ d <- data[data$Chair.Name==input$chair,]
+ 
+# Lessons.Students
+ les.stu <- d$Lessons.Students
+ les.aud <- d$Lessons.Audience
+ if(length(les.stu)>0 & length(les.aud)>0){
+  qs <- unlist(string.break.line(paste(les.stu,les.aud,sep="\n")))
+ }else if(length(les.stu)>0){
+  qs <- unlist(string.break.line(les.stu))
+ }else if(length(les.aud)>0){
+  qs <- unlist(string.break.line(les.aud))
+ }else{
+   qs <- c("")
+ }
+ data.frame(Lessons=qs)
+ 
+})
+
+```
+
+
+Student
+=====================================
+
+
+
+```{r}
+
+students <- sort(sessions$Student.Name)
+
+selectInput("student", label = "Please select the presenting student's name:",
+            choices = enc2native(students), selected = enc2native(students[1]))
+```
+
+
+Column 1
+-------------------------------------
+
+### How much did audience understand the presentation?
+
+```{r}
+
+renderPlot({
+  data <- audienceD()
+  d <- data[data$Name==input$student,]
+  ggplot(d, aes(x=Understanding, fill="red"))+geom_density(alpha=0.2)+theme_bw()+xlim(0,10)+geom_vline(xintercept = mean(d$Understanding))
+})
+```
+
+
+### Student open questions
+
+```{r}
+
+library(Hmisc)
+
+renderTable({
+ data <- presenterD()
+ studentQ1 <- data[data$Name == input$student,"MainQ"]
+ studentQ2 <- data[data$Name == input$student,"OtherQ"]
+ if(length(studentQ1)>0 & length(studentQ2)>0){
+  qs <- unlist(string.break.line(paste(studentQ1,studentQ2,sep="\n")))
+ }else if(length(studentQ1)>0){
+  qs <- unlist(string.break.line(studentQ1))
+ }else if(length(studentQ2)>0){
+  qs <- unlist(string.break.line(studentQ2))
+ }else{
+   qs <- c("")
+ }
+ data.frame(Question=qs)
+ 
+})
+
+
+```
+
+
+### Open questions contributed by audience
+
+```{r}
+
+library(Hmisc)
+
+renderTable({
+ data <- audienceD()
+ audienceQ1 <- data[data$Name == input$student,"MainQ"]
+ audienceQ2 <- data[data$Name == input$student,"OtherQ"]
+ if(length(audienceQ1)>0 & length(audienceQ2)>0){
+  qs <- unlist(string.break.line(paste(audienceQ1,audienceQ2,sep="\n")))
+ }else if(length(audienceQ1)>0){
+  qs <- unlist(string.break.line(audienceQ1))
+ }else if(length(audienceQ2)>0){
+  qs <- unlist(string.break.line(audienceQ2))
+ }else{
+   qs <- c("")
+ }
+ data.frame(Question=qs)
+ 
+})
+
+
+```
+
+
+Column 2
+-------------------------------------
+
+### Questions discussed
+
+```{r}
+
+renderValueBox({
+              data <- feedbackD()
+              d <- data[data$Name==input$student,]
+              valueBox(
+                value=nrow(d),
+                icon = "fa-question",
+                color="warning")
+                })
+```
+
+### Total feedback gathered (lines / words)
+
+```{r}
+
+renderValueBox({
+              data <- feedbackD()
+              d <- data[data$Name==input$student,]
+              totalfb <- paste(d$Feedback, sep = "\n")
+              lines <- unlist(string.break.line(totalfb))
+              wc <- sum(sapply(totalfb,FUN = count_words))
+              message <- paste(length(lines),"/",wc)
+              valueBox(
+                value=message,
+                icon = "fa-pencil",
+                color="success")
+                })
+```
+
+
+
+### Feedback word cloud
+
+```{r}
+
+renderPlot({
+  data <- feedbackD()
+  d <- data[data$Name==input$student,]
+  if(nrow(d)>0){
+    corpus <- Corpus(VectorSource(d$Feedback))
+    corpus <- tm_map(corpus, removePunctuation)
+    corpus <- tm_map(corpus, tolower)
+    corpus <- tm_map(corpus, removeWords, stopwords("english"))
+    corpus <- tm_map(corpus, stemDocument)
+    corpus <- tm_map(corpus, PlainTextDocument)
+    wordcloud(corpus, max.words=100, random.order=F)
+  }
+})
+```
+
+### Student satisfaction with feedback
+
+
+```{r}
+
+renderPlot({
+  data <- feedbackD()
+  d <- data[data$Name==input$student,]
+  ggplot(d, aes(x=Satisfaction, fill="red"))+geom_density(alpha=0.2)+theme_bw()+xlim(0,10)+geom_vline(xintercept = mean(d$Satisfaction))
+})
+```
+
