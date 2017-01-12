@@ -135,7 +135,13 @@ convertFactor <- function(values){
         count
       }
 
-
+  clean_vector <- function(v){
+    newv <- v[v!=""]
+    newv2 <- newv[length(newv)>1]
+    newv2
+  }
+      
+      
 sessions <- read.csv(file = "Sessions.csv", encoding="UTF-8", stringsAsFactors=FALSE)
 
 ```
@@ -144,7 +150,7 @@ sessions <- read.csv(file = "Sessions.csv", encoding="UTF-8", stringsAsFactors=F
 Overall
 =====================================  
     
-Column 1 {data-width=600}
+Column 1 
 -------------------------------------
 
 ### Sessions recorded and wrapped up
@@ -166,7 +172,6 @@ renderValueBox({
 
 
 ```{r}
-#TODO: Filter out empty/semi-empty open questions and lessons!
 
 renderValueBox({
   
@@ -183,6 +188,8 @@ renderValueBox({
    qs1 <- character(0)
  }
 
+ qs1 <- clean_vector(qs1)
+ 
   data <- audienceD()
  audienceQ1 <- data[,"MainQ"]
  audienceQ2 <- data[,"OtherQ"]
@@ -196,6 +203,8 @@ renderValueBox({
    qs2 <- character(0)
  }
 
+ qs2 <- clean_vector(qs2)
+ 
   message=paste(length(qs1), "/", length(qs2))
   
               valueBox(
@@ -229,6 +238,7 @@ renderValueBox({
               fb <- feedbackD()
               d <- fb
               f <- unlist(string.break.line(paste(fb$Feedback,sep="\n")))
+              f <- clean_vector(f)
               message <- paste(nrow(d),"/",length(f))
               valueBox(
                 value=message,
@@ -261,6 +271,10 @@ renderValueBox({
    d <- data[,]
    les.stu <- paste(d$Lessons.Students,sep="\n")
    les.aud <- paste(d$Lessons.Audience,sep="\n")
+   
+   les.stu <- clean_vector(les.stu)
+   les.aud <- clean_vector(les.aud)
+   
    n_les.stu <- 0
    n_les.aud <- 0
    if(length(les.stu)>0){
@@ -280,7 +294,7 @@ renderValueBox({
 
 
 
-Column 3 {data-width=1600}
+Column 2
 -------------------------------------
 
 ### Open questions word cloud
@@ -300,6 +314,8 @@ renderPlot({
   }
   
   d <- unlist(string.break.line(paste(d,sep="\n")))
+  
+  d <- clean_vector(d)
   
   if(length(d)>0){
     corpus <- Corpus(VectorSource(d))
@@ -322,8 +338,9 @@ renderPlot({
 renderPlot({
   fb <- feedbackD()
   d <- fb
-  if(nrow(d)>0){
-    corpus <- Corpus(VectorSource(d$Feedback))
+  d2 <- clean_vector(unlist(string.break.line(d$Feedback)))
+  if(length(d2)>0){
+    corpus <- Corpus(VectorSource(d2))
     corpus <- tm_map(corpus, removePunctuation)
     corpus <- tm_map(corpus, tolower)
     corpus <- tm_map(corpus, removeWords, stopwords("english"))
@@ -334,6 +351,10 @@ renderPlot({
 })
 ```
 
+Column 3
+-------------------------------------
+
+
 ### Lessons word cloud
 
 ```{r}
@@ -341,6 +362,7 @@ renderPlot({
 renderPlot({
   wr <- wrapD()
   d <- c(wr$Lessons.Students,wr$Lessons.Audience)
+  d <- clean_vector(d)
   if(length(d)>0){
     corpus <- Corpus(VectorSource(d))
     corpus <- tm_map(corpus, removePunctuation)
@@ -416,7 +438,7 @@ renderValueBox({
               message="0 / 0"
               if(nrow(d)>0){
                 totalfb <- paste(d$Feedback, sep = "\n")
-                lines <- unlist(string.break.line(totalfb))
+                lines <- clean_vector(unlist(string.break.line(totalfb)))
                 wc <- sum(sapply(totalfb,FUN = count_words))
                 message <- paste(length(lines),"/",wc)
                   
@@ -439,7 +461,8 @@ renderPlot({
   fb <- feedbackD()
   d <- fb[fb$Name %in% sessionstu,]
   if(nrow(d)>0){
-    corpus <- Corpus(VectorSource(d$Feedback))
+    d2 <- clean_vector(d$Feedback)
+    corpus <- Corpus(VectorSource(d2))
     corpus <- tm_map(corpus, removePunctuation)
     corpus <- tm_map(corpus, tolower)
     corpus <- tm_map(corpus, removeWords, stopwords("english"))
@@ -511,6 +534,7 @@ renderTable({
  }else{
    qs <- c("")
  }
+ qs <- clean_vector(qs)
  data.frame(Lessons=qs)
  
 })
@@ -528,7 +552,7 @@ Student
 students <- sort(sessions$Student.Name)
 
 selectInput("student", label = "Please select the presenting student's name:",
-            choices = enc2native(students), selected = enc2native(students[1]))
+            choices = students, selected = students[1])
 ```
 
 
@@ -566,6 +590,7 @@ renderTable({
  }else{
    qs <- c("")
  }
+ qs <- clean_vector(qs)
  data.frame(Question=qs)
  
 })
@@ -593,6 +618,7 @@ renderTable({
  }else{
    qs <- c("")
  }
+ qs <- clean_vector(qs)
  data.frame(Question=qs)
  
 })
@@ -628,7 +654,7 @@ renderValueBox({
               message="0 / 0"
               if(nrow(d)>0){
                 totalfb <- paste(d$Feedback, sep = "\n")
-                lines <- unlist(string.break.line(totalfb))
+                lines <- clean_vector(unlist(string.break.line(totalfb)))
                 wc <- sum(sapply(totalfb,FUN = count_words))
                 message <- paste(length(lines),"/",wc)
                 
@@ -650,7 +676,8 @@ renderPlot({
   data <- feedbackD()
   d <- data[data$Name==input$student,]
   if(nrow(d)>0){
-    corpus <- Corpus(VectorSource(d$Feedback))
+    d2 <- clean_vector(d$Feedback)
+    corpus <- Corpus(VectorSource(d2))
     corpus <- tm_map(corpus, removePunctuation)
     corpus <- tm_map(corpus, tolower)
     corpus <- tm_map(corpus, removeWords, stopwords("english"))
@@ -661,57 +688,34 @@ renderPlot({
 })
 ```
 
-### Student satisfaction with feedback
+<!-- ### Student satisfaction with feedback -->
 
 
 ```{r}
 # TODO: remove this graph??
 
-renderPlot({
-  data <- feedbackD()
-  d <- data[data$Name==input$student,]
-  ggplot(d, aes(x=Satisfaction))+geom_density(alpha=0.2, fill="red")+theme_bw()+xlim(0,10)+geom_vline(xintercept = mean(d$Satisfaction))
-})
+# renderPlot({
+#   data <- feedbackD()
+#   d <- data[data$Name==input$student,]
+#   ggplot(d, aes(x=Satisfaction))+geom_density(alpha=0.2, fill="red")+theme_bw()+xlim(0,10)+geom_vline(xintercept = mean(d$Satisfaction))
+# })
 ```
 
 Column 3
 -------------------------------------
 
 
-```{r}
-
-# TODO: FIX THIS!!
-  data <- feedbackD()
-
-question <- data$Question
-
-selectInput("question", label = "Please select the discussed question:",
-            choices = question, selected = question[1])
-```
-
-
-
 ### Feedback
 
 ```{r}
-# TODO: Change this to show actual feedback!
 library(Hmisc)
 
 renderTable({
- data <- presenterD()
- studentQ1 <- data[data$Name == input$student,"MainQ"]
- studentQ2 <- data[data$Name == input$student,"OtherQ"]
- if(length(studentQ1)>0 & length(studentQ2)>0){
-  qs <- unlist(string.break.line(paste(studentQ1,studentQ2,sep="\n")))
- }else if(length(studentQ1)>0){
-  qs <- unlist(string.break.line(studentQ1))
- }else if(length(studentQ2)>0){
-  qs <- unlist(string.break.line(studentQ2))
- }else{
-   qs <- c("")
+ data <- feedbackD()
+ fb <- data[data$Name == input$student,c("Question","Feedback")]
+ if(nrow(fb)>0){
+  fb
  }
- data.frame(Question=qs)
- 
 })
 
 
