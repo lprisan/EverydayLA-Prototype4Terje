@@ -10,7 +10,7 @@ Planned time: 90-120 mins
 ### 2. Student presentation rounds **[20' each]**
 * Student presents main ideas of their proposal (in less than 15 mins)
 * After the presentation, **presenting student** answers [this form](...form.1b.URL...){:target="_blank"}
-* After the presentation, **audience** answers [this other form](...form.1a.URL...m){:target="_blank"}
+* After the presentation, **audience** answers [this other form](...form.1a.URL...){:target="_blank"}
 * Finally, the student goes to [his/her dashboard](...dashboard.student.URL...){:target="_blank"}, looks at the questions available, and picks the most important ones. Meanwhile, the next student sets up for presenting.
 
 ### 3. Breakout groups **[25']**
