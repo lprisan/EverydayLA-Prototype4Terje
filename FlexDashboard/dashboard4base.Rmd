@@ -1,5 +1,5 @@
 ---
-title: "Everyday LA: Vihula W.S. (13.01.2017)"
+title: "Everyday LA: ...eventname... (...date...)"
 output: 
   flexdashboard::flex_dashboard
 runtime: shiny
@@ -8,6 +8,7 @@ runtime: shiny
 ```{r setup, include=FALSE}
 library(flexdashboard)
 library(gsheet)
+library(tidyr)
 suppressMessages(library(dplyr))
 library(data.table)
 library(rvest)
@@ -20,10 +21,11 @@ library(SnowballC)
 library(stringi)
 library(stringr)
 
-URL_Q_Presenter <- 'https://docs.google.com/spreadsheets/d/1cEz64I2_YmwwZfVevH2kpqXwUPi79LzV43nK374jE0A/edit?usp=sharing'
-URL_Q_Audience <- 'https://docs.google.com/spreadsheets/d/1hQTcSdw7r04GOyn4RyZFA-yGaU0mkoVF4_-GkdBcKf0/edit?usp=sharing'
-URL_Q_Feedback <- 'https://docs.google.com/spreadsheets/d/1QQ8k8fjLTDxXv7OJ9MaJC2dPVnbss2MAYki1k8rV3YE/edit?usp=sharing'
-URL_Q_Wrap <- 'https://docs.google.com/spreadsheets/d/1K3YTYAyZ1RinpxM4wrQXmlbXvwVrKrp5Yn7nS_XlImE/edit?usp=sharing'
+
+URL_Q_Presenter <- 'https://docs.google.com/spreadsheets/d/15nJlsp37vuTbGm_HGmFQXBrtv7pd1mo7XWdYJPz4O3c/edit?usp=sharing'
+URL_Q_Audience <- 'https://docs.google.com/spreadsheets/d/1Nv0UlndCZaQvzRCFVXaO36PROwAvVdXB39vT49wCR3Y/edit?usp=sharing'
+URL_Q_Feedback <- 'https://docs.google.com/spreadsheets/d/1vTR5k_ByQ483hB9-woyh0QRXzGgDFUYeYjffKLKkdx4/edit?usp=sharing'
+URL_Q_Wrap <- 'https://docs.google.com/spreadsheets/d/19nhO79zZZynEybbIfWTIK1qkAX4xf38rSLgJPesbyjU/edit?usp=sharing'
 
 
 # Define the data gathering function here? possibly using
@@ -142,13 +144,30 @@ convertFactor <- function(values){
   }
       
       
-sessions <- read.csv(file = "Sessions.csv", encoding="UTF-8", stringsAsFactors=FALSE)
+#sessions <- read.csv(file = "Sessions.csv", encoding="UTF-8", stringsAsFactors=FALSE)
 
 ```
 
 
 Overall
 =====================================  
+
+
+```{r}
+renderUI({
+pres <- presenterD()
+
+dates <- sort(unique(as.Date(strptime(pres$Timestamp,'%m/%d/%Y %H:%M:%OS'))))
+
+choices <- c("(all)",format(dates, format="%d.%m.%Y"))
+
+selectInput("date", label = "Please select the session's data:",
+            choices = choices, selected = choices[1])
+})
+```
+
+
+
     
 Column 1 
 -------------------------------------
@@ -158,8 +177,14 @@ Column 1
 ```{r}
 
 renderValueBox({
-              data <- wrapD()
-              sessions <- unique(data$Chair.Name)
+              pres <- presenterD()
+              sessions <- character(0)
+              if(input$date!="(all)"){
+                sessions <- c(input$date)
+              }else{
+                sessions <- sort(unique(as.Date(strptime(pres$Timestamp,'%m/%d/%Y %H:%M:%OS'))))
+              }
+              
               valueBox(
                 value=length(sessions),
                 icon = "fa-microphone",
@@ -176,6 +201,13 @@ renderValueBox({
 renderValueBox({
   
    data <- presenterD()
+   
+  # Filter by selected date
+    if(input$date!="(all)"){
+      data <- data[format(as.Date(strptime(data$Timestamp,'%m/%d/%Y %H:%M:%OS')), format="%d.%m.%Y")==input$date,]
+    }
+   
+   
  studentQ1 <- data[,"MainQ"]
  studentQ2 <- data[,"OtherQ"]
  if(length(studentQ1)>0 & length(studentQ2)>0){
@@ -191,6 +223,12 @@ renderValueBox({
  qs1 <- clean_vector(qs1)
  
   data <- audienceD()
+  
+  # Filter by selected date
+  if(input$date!="(all)"){
+      data <- data[format(as.Date(strptime(data$Timestamp,'%m/%d/%Y %H:%M:%OS')), format="%d.%m.%Y")==input$date,]
+    }
+  
  audienceQ1 <- data[,"MainQ"]
  audienceQ2 <- data[,"OtherQ"]
  if(length(audienceQ1)>0 & length(audienceQ2)>0){
@@ -223,6 +261,13 @@ renderValueBox({
 
 renderPlot({
   aud <- audienceD()
+  
+    # Filter by selected date
+    if(input$date!="(all)"){
+      aud <- aud[format(as.Date(strptime(aud$Timestamp,'%m/%d/%Y %H:%M:%OS')), format="%d.%m.%Y")==input$date,]
+    }
+  
+  
   d <- aud
   if(nrow(d)>0){
     ggplot(d, aes(x=Understanding))+geom_density(alpha=0.2, fill="green")+theme_bw()+xlim(0,10)+geom_vline(xintercept = mean(d$Understanding))
@@ -236,6 +281,12 @@ renderPlot({
 
 renderValueBox({
               fb <- feedbackD()
+              
+                # Filter by selected date
+                if(input$date!="(all)"){
+                  fb <- fb[format(as.Date(strptime(fb$Timestamp,'%m/%d/%Y %H:%M:%OS')), format="%d.%m.%Y")==input$date,]
+                }
+              
               d <- fb
               f <- unlist(string.break.line(paste(fb$Feedback,sep="\n")))
               f <- clean_vector(f)
@@ -255,6 +306,12 @@ renderValueBox({
 
 renderPlot({
   fb <- feedbackD()
+  
+  # Filter by selected date
+  if(input$date!="(all)"){
+    fb <- fb[format(as.Date(strptime(fb$Timestamp,'%m/%d/%Y %H:%M:%OS')), format="%d.%m.%Y")==input$date,]
+  }
+  
   d <- fb
   if(nrow(d)>0){
     ggplot(d, aes(x=Satisfaction))+geom_density(alpha=0.2, fill="red")+theme_bw()+xlim(0,10)+geom_vline(xintercept = mean(d$Satisfaction))
@@ -268,7 +325,14 @@ renderPlot({
 
 renderValueBox({
    data <- wrapD()
-   d <- data[,]
+   
+   # Filter by selected date
+  if(input$date!="(all)"){
+      data <- data[format(as.Date(strptime(data$Timestamp,'%m/%d/%Y %H:%M:%OS')), format="%d.%m.%Y")==input$date,]
+    }
+   
+   
+   d <- data
    les.stu <- paste(d$Lessons.Students,sep="\n")
    les.aud <- paste(d$Lessons.Audience,sep="\n")
    
@@ -305,6 +369,14 @@ renderPlot({
   pr <- presenterD()
   au <- audienceD()
   
+  # Filter by selected date
+  if(input$date!="(all)"){
+      pr <- pr[format(as.Date(strptime(pr$Timestamp,'%m/%d/%Y %H:%M:%OS')), format="%d.%m.%Y")==input$date,]
+      au <- au[format(as.Date(strptime(au$Timestamp,'%m/%d/%Y %H:%M:%OS')), format="%d.%m.%Y")==input$date,]
+    }
+  
+  
+  
   d <- character(0)
   if(nrow(pr)>0){
     d <- c(d,pr$MainQ,pr$OtherQ)
@@ -337,6 +409,12 @@ renderPlot({
 
 renderPlot({
   fb <- feedbackD()
+  
+    # Filter by selected date
+  if(input$date!="(all)"){
+    fb <- fb[format(as.Date(strptime(fb$Timestamp,'%m/%d/%Y %H:%M:%OS')), format="%d.%m.%Y")==input$date,]
+  }
+  
   d <- fb
   d2 <- clean_vector(unlist(string.break.line(d$Feedback)))
   if(length(d2)>0){
@@ -361,6 +439,12 @@ Column 3
 
 renderPlot({
   wr <- wrapD()
+  
+  # Filter by selected date
+  if(input$date!="(all)"){
+    wr <- wr[format(as.Date(strptime(wr$Timestamp,'%m/%d/%Y %H:%M:%OS')), format="%d.%m.%Y")==input$date,]
+  }
+  
   d <- c(wr$Lessons.Students,wr$Lessons.Audience)
   d <- clean_vector(d)
   if(length(d)>0){
@@ -376,171 +460,6 @@ renderPlot({
 ```
 
 
-Session
-=====================================
-
-
-
-```{r}
-
-chairs <- sort(unique(sessions$Chair.Name))
-
-selectInput("chair", label = "Please select the session chair's name:",
-            choices = chairs, selected = chairs[1])
-```
-
-
-
-
-Column 1
--------------------------------------
-
-### Students presented
-
-```{r}
-
-renderValueBox({
-              sessionstu <- sessions[sessions$Chair.Name == input$chair,"Student.Name"]
-              aud <- audienceD()
-              pres <- presenterD()
-              d <- pres[pres$Name %in% sessionstu,]
-              valueBox(
-                value=nrow(d),
-                icon = "fa-user",
-                color="primary")
-                })
-```
-
-### Open questions discussed 
-
-```{r}
-
-renderValueBox({
-              sessionstu <- sessions[sessions$Chair.Name == input$chair,"Student.Name"]
-              fb <- feedbackD()
-              d <- fb[fb$Name %in% sessionstu,]
-              valueBox(
-                value=nrow(d),
-                icon = "fa-question",
-                color="warning")
-                })
-```
-
-
-### Session words / lines of feedback 
-
-```{r}
-
-renderValueBox({
-              sessionstu <- sessions[sessions$Chair.Name == input$chair,"Student.Name"]
-              fb <- feedbackD()
-              d <- fb[fb$Name %in% sessionstu,]
-              message="0 / 0"
-              if(nrow(d)>0){
-                totalfb <- paste(d$Feedback, sep = "\n")
-                lines <- clean_vector(unlist(string.break.line(totalfb)))
-                wc <- sum(sapply(totalfb,FUN = count_words))
-                message <- paste(length(lines),"/",wc)
-                  
-              }
-              valueBox(
-                  value=message,
-                  icon = "fa-pencil",
-                  color="success")
-                })
-```
-
-
-
-### Session feedback word cloud
-
-```{r}
-
-renderPlot({
-  sessionstu <- sessions[sessions$Chair.Name == input$chair,"Student.Name"]
-  fb <- feedbackD()
-  d <- fb[fb$Name %in% sessionstu,]
-  if(nrow(d)>0){
-    d2 <- clean_vector(d$Feedback)
-    corpus <- Corpus(VectorSource(d2))
-    corpus <- tm_map(corpus, removePunctuation)
-    corpus <- tm_map(corpus, tolower)
-    corpus <- tm_map(corpus, removeWords, stopwords("english"))
-    corpus <- tm_map(corpus, stemDocument)
-    corpus <- tm_map(corpus, PlainTextDocument)
-    wordcloud(corpus, max.words=100, random.order=F)
-  }
-})
-```
-
-
-Column 2
--------------------------------------
-
-### Audience comprehension of presentations
-
-
-```{r}
-
-renderPlot({
-  sessionstu <- sessions[sessions$Chair.Name == input$chair,"Student.Name"]
-  aud <- audienceD()
-  d <- aud[aud$Name %in% sessionstu,]
-  if(nrow(d)>0){
-    ggplot(d, aes(x=Understanding))+geom_density(alpha=0.2, fill="green")+theme_bw()+xlim(0,10)+geom_vline(xintercept = mean(d$Understanding))
-  }
-})
-```
-
-
-
-### Student satisfaction with feedback
-
-
-```{r}
-
-renderPlot({
-  sessionstu <- sessions[sessions$Chair.Name == input$chair,"Student.Name"]
-  fb <- feedbackD()
-  d <- fb[fb$Name %in% sessionstu,]
-  if(nrow(d)>0){
-    ggplot(d, aes(x=Satisfaction))+geom_density(alpha=0.2, fill="red")+theme_bw()+xlim(0,10)+geom_vline(xintercept = mean(d$Satisfaction))
-  }
-})
-```
-
-Column 3
--------------------------------------
-
-### Lessons learned
-
-```{r}
-
-library(Hmisc)
-
-renderTable({
- data <- wrapD()
- print(data)
- print(input$chair)
- d <- data[data$Chair.Name==input$chair,]
- les.stu <- d$Lessons.Students
- les.aud <- d$Lessons.Audience
- if(length(les.stu)>0 & length(les.aud)>0){
-  qs <- unlist(string.break.line(paste(les.stu,les.aud,sep="\n")))
- }else if(length(les.stu)>0){
-  qs <- unlist(string.break.line(les.stu))
- }else if(length(les.aud)>0){
-  qs <- unlist(string.break.line(les.aud))
- }else{
-   qs <- c("")
- }
- qs <- clean_vector(qs)
- data.frame(Lessons=qs)
- 
-})
-
-```
-
 
 Student
 =====================================
@@ -548,11 +467,16 @@ Student
 
 
 ```{r}
+renderUI({
+aud <- audienceD()
 
-students <- sort(sessions$Student.Name)
+names <- sort(unique(as.character(aud$Name)))
+print(names)
+selectInput("student", label = "Please select the presenter/student:",
+            choices = names, selected = names[1])
+})
 
-selectInput("student", label = "Please select the presenting student's name:",
-            choices = students, selected = students[1])
+
 ```
 
 
@@ -565,7 +489,7 @@ Column 1
 
 renderPlot({
   data <- audienceD()
-  d <- data[data$Name==input$student,]
+  d <- data[tolower(as.character(data$Name))==tolower(input$student),]
   ggplot(d, aes(x=Understanding))+geom_density(alpha=0.2, fill="green")+theme_bw()+xlim(0,10)+geom_vline(xintercept = mean(d$Understanding))
 })
 ```
@@ -579,8 +503,8 @@ library(Hmisc)
 
 renderTable({
  data <- presenterD()
- studentQ1 <- data[data$Name == input$student,"MainQ"]
- studentQ2 <- data[data$Name == input$student,"OtherQ"]
+ studentQ1 <- data[tolower(as.character(data$Name)) == tolower(input$student),"MainQ"]
+ studentQ2 <- data[tolower(as.character(data$Name)) == tolower(input$student),"OtherQ"]
  if(length(studentQ1)>0 & length(studentQ2)>0){
   qs <- unlist(string.break.line(paste(studentQ1,studentQ2,sep="\n")))
  }else if(length(studentQ1)>0){
@@ -607,8 +531,8 @@ library(Hmisc)
 
 renderTable({
  data <- audienceD()
- audienceQ1 <- data[data$Name == input$student,"MainQ"]
- audienceQ2 <- data[data$Name == input$student,"OtherQ"]
+ audienceQ1 <- data[tolower(as.character(data$Name)) == tolower(input$student),"MainQ"]
+ audienceQ2 <- data[tolower(as.character(data$Name)) == tolower(input$student),"OtherQ"]
  if(length(audienceQ1)>0 & length(audienceQ2)>0){
   qs <- unlist(string.break.line(paste(audienceQ1,audienceQ2,sep="\n")))
  }else if(length(audienceQ1)>0){
@@ -636,7 +560,7 @@ Column 2
 
 renderValueBox({
               data <- feedbackD()
-              d <- data[data$Name==input$student,]
+              d <- data[tolower(as.character(data$Name))==tolower(input$student),]
               valueBox(
                 value=nrow(d),
                 icon = "fa-question",
@@ -650,7 +574,7 @@ renderValueBox({
 
 renderValueBox({
               data <- feedbackD()
-              d <- data[data$Name==input$student,]
+              d <- data[tolower(as.character(data$Name))==tolower(input$student),]
               message="0 / 0"
               if(nrow(d)>0){
                 totalfb <- paste(d$Feedback, sep = "\n")
@@ -674,7 +598,7 @@ renderValueBox({
 
 renderPlot({
   data <- feedbackD()
-  d <- data[data$Name==input$student,]
+  d <- data[tolower(as.character(data$Name))==tolower(input$student),]
   if(nrow(d)>0){
     d2 <- clean_vector(d$Feedback)
     corpus <- Corpus(VectorSource(d2))
@@ -712,7 +636,7 @@ library(Hmisc)
 
 renderTable({
  data <- feedbackD()
- fb <- data[data$Name == input$student,c("Question","Feedback")]
+ fb <- data[tolower(as.character(data$Name)) == tolower(input$student),c("Question","Feedback")]
  if(nrow(fb)>0){
   fb
  }
