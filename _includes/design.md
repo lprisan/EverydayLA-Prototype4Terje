@@ -20,8 +20,10 @@ Planned time: 90-120 mins
     2. The small group responds or gives any other input. The student takes notes of the responses/ideas/conclusions, and next actions in [this form](https://docs.google.com/forms/d/e/1FAIpQLSfXANsd10kNwAneP7sMSA2apJq7soVFAeVUt6_iI7aYZmxTGA/viewform){:target="_blank"}
     3. When there are no more ideas, or the student feels another question should be posed, go back to 1.
 
-### 4. Wrap-up **[10']**
+### 4. Wrap-up and questionnaire **[15']**
 * The session chair opens up [this form](https://docs.google.com/forms/d/e/1FAIpQLScbBu_NACzyubZdSpXejMnNaMOHEHZVtSSamRpd0A7dCuGYNw/viewform){:target="_blank"}, to take notes of the session conclusions
 * Each presenting student summarizes in **1 minute** the most interesting thing they've learned in the session
 * The floor is opened to the audience to note (briefly!) other interesting lessons learned in the session
 * The session chair opens up the [session dashboard](https://luispprieto.shinyapps.io/dashboard4terje/#section-overall){:target="_blank"}, and shows it to the participants
+* Finally, the teacher asks students to reflect on their learning experience today (and reflects him/herself), [using the Prolearning tool](http://prolearning.realto.ch/){:target="_blank"}.
+    * IMPORTANT: this questionnaire is **anonymous**, and it is used for the teacher's own understanding and the improvement of the course. This kind of reflection/self-assessment exercises have been shown to be very effective in increasing learning outcomes
