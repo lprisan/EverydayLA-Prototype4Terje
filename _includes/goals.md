@@ -1,4 +1,4 @@
-## Goal of the session
+## Kontaktpäeva eesmärgid
 
-1. Every student should have the chance to communicate what the current ideas are
-2. EVery student should get input/feedback about the major open questions they have about their topic 
+1. Tudengil on võimalus esitleda hetkeseisu oma magistritööst
+2. Tudengil on võimalus saada tagasisidet oma magistritööle ning vastuseid esilekerkinud küsimustele.  
